@@ -67,7 +67,7 @@ POST {{baseUrl}}/api/auth/forgot-password
 Content-Type: application/json
 
 {
-  "phone": "9876543210"
+  "phone": "9876543880"
 }
 
 ### 7. Verify OTP
@@ -75,13 +75,13 @@ POST {{baseUrl}}/api/auth/verify-otp
 Content-Type: application/json
 
 {
-  "identifier": "9876543210",
+  "identifier": "9876543880",
   "otp": "1234"
 }
 
 ### 8. Reset Password (Protected)
 POST {{baseUrl}}/api/auth/reset-password
-Authorization: Bearer {{token}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEwLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzc2MTc0NzQxLCJleHAiOjE3NzYxNzU2NDEsIm5iZiI6MTc3NjE3NDc0MX0.hR6rnoWYY3wfjZMRf6N6A3PYHhBl7fSln-ceLtEoTRQ
 Content-Type: application/json
 
 {
@@ -91,7 +91,7 @@ Content-Type: application/json
 
 ### 9. Logout (Protected)
 POST {{baseUrl}}/api/auth/logout
-Authorization: Bearer {{token}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEwLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzc2MTc0NzQxLCJleHAiOjE3NzYxNzU2NDEsIm5iZiI6MTc3NjE3NDc0MX0.hR6rnoWYY3wfjZMRf6N6A3PYHhBl7fSln-ceLtEoTRQ
 Content-Type: application/json
 
 {
@@ -104,7 +104,7 @@ Content-Type: application/json
 
 ### 10. Get User by ID (Protected)
 GET {{baseUrl}}/api/users/1
-Authorization: Bearer {{token}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEwLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzc2MTc0OTI0LCJleHAiOjE3NzYxNzU4MjQsIm5iZiI6MTc3NjE3NDkyNH0.S57h5YtKkKOY1uARYOoyB_PG0zphbQI5eUaXjcMMQ5g
 
 ### 11. Get User by Email (Protected)
 GET {{baseUrl}}/api/users/email/test@example.com
@@ -167,7 +167,7 @@ GET {{baseUrl}}/api/products/1/configurations?size=6mm&purpose=Commercial Kitche
 
 ### 21. Get All Orders (Protected)
 GET {{baseUrl}}/api/orders?page=1&limit=10
-Authorization: Bearer {{token}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEwLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzc2MTc0OTI0LCJleHAiOjE3NzYxNzU4MjQsIm5iZiI6MTc3NjE3NDkyNH0.S57h5YtKkKOY1uARYOoyB_PG0zphbQI5eUaXjcMMQ5g
 
 ### 22. Get Orders with Filters (Protected)
 GET {{baseUrl}}/api/orders?order_status=pending&payment_status=pending
@@ -175,7 +175,7 @@ Authorization: Bearer {{token}}
 
 ### 23. Create New Order (Protected)
 POST {{baseUrl}}/api/orders
-Authorization: Bearer {{token}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEwLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzc2MTc0OTI0LCJleHAiOjE3NzYxNzU4MjQsIm5iZiI6MTc3NjE3NDkyNH0.S57h5YtKkKOY1uARYOoyB_PG0zphbQI5eUaXjcMMQ5g
 Content-Type: application/json
 
 {
@@ -199,7 +199,7 @@ Content-Type: application/json
 
 ### 24. Get Single Order (Protected)
 GET {{baseUrl}}/api/orders/1
-Authorization: Bearer {{token}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEwLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNzc2MTc0OTI0LCJleHAiOjE3NzYxNzU4MjQsIm5iZiI6MTc3NjE3NDkyNH0.S57h5YtKkKOY1uARYOoyB_PG0zphbQI5eUaXjcMMQ5g
 
 ### 25. Update Order Status (Protected)
 PUT {{baseUrl}}/api/orders/1/status

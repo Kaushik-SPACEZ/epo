@@ -46,8 +46,7 @@ export default function OrderSummaryScreen() {
 
   const handleConfirm = async () => {
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1000));
-    const order = placeOrder();
+    const order = await placeOrder();
     setLoading(false);
     if (order) setPlacedOrderId(order.id);
   };
