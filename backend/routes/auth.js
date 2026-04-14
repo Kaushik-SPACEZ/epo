@@ -3,6 +3,7 @@ const router = express.Router();
 const { api } = require('../utils/apiClient');
 const { extractToken, requireAuth } = require('../middleware/extractToken');
 const { registerLimiter, loginLimiter, otpLimiter } = require('../middleware/rateLimiter');
+const { validateEmailField, validateIdentifierIfEmail } = require('../middleware/validateEmail');
 
 // Apply token extraction to all routes
 router.use(extractToken);
@@ -10,7 +11,7 @@ router.use(extractToken);
 // ============================================
 // 1. POST /api/auth/register
 // ============================================
-router.post('/register', registerLimiter, async (req, res) => {
+router.post('/register', registerLimiter, validateEmailField, async (req, res) => {
   try {
     const result = await api.auth.register(req.body);
     res.status(201).json(result);
@@ -26,7 +27,7 @@ router.post('/register', registerLimiter, async (req, res) => {
 // ============================================
 // 2. POST /api/auth/login
 // ============================================
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', loginLimiter, validateEmailField, async (req, res) => {
   try {
     const result = await api.auth.login(req.body);
     res.json(result);
@@ -87,7 +88,7 @@ router.post('/refresh', async (req, res) => {
 // ============================================
 // 6. POST /api/auth/forgot-password
 // ============================================
-router.post('/forgot-password', otpLimiter, async (req, res) => {
+router.post('/forgot-password', otpLimiter, validateIdentifierIfEmail, async (req, res) => {
   try {
     const result = await api.auth.forgotPassword(req.body);
     res.json(result);
@@ -131,7 +132,7 @@ router.post('/reset-password', requireAuth, async (req, res) => {
 });
 
 // Legacy endpoints for backward compatibility
-router.post('/signup', registerLimiter, async (req, res) => {
+router.post('/signup', registerLimiter, validateEmailField, async (req, res) => {
   try {
     const result = await api.auth.register(req.body);
     res.status(201).json(result);
@@ -144,7 +145,7 @@ router.post('/signup', registerLimiter, async (req, res) => {
   }
 });
 
-router.post('/signin', loginLimiter, async (req, res) => {
+router.post('/signin', loginLimiter, validateEmailField, async (req, res) => {
   try {
     const result = await api.auth.login(req.body);
     res.json(result);

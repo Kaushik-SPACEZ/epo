@@ -46,6 +46,7 @@
     "expo-application": "~6.1.4",
     "expo-asset": "~11.1.5",
     "expo-auth-session": "~6.2.1",
+    "expo-av": "^16.0.8",
     "expo-blur": "~14.1.4",
     "expo-clipboard": "^7.1.5",
     "expo-constants": "~17.1.6",

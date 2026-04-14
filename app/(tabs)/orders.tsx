@@ -5,7 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrder } from '@/hooks/useOrder';
-import { Logo } from '@/components/feature/Logo';
+import { ScreenHeader } from '@/components/feature/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
 import { PlacedOrder } from '@/contexts/OrderContext';
@@ -56,10 +56,7 @@ export default function OrdersScreen() {
   if (!user) {
     return (
       <View style={styles.container}>
-        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-          <Logo />
-          <Text style={styles.headerTitle}>My Orders</Text>
-        </View>
+        <ScreenHeader title="My Orders" showLogo />
         <View style={styles.empty}>
           <MaterialIcons name="person-outline" size={72} color={Colors.borderLight} />
           <Text style={styles.emptyTitle}>Sign In Required</Text>
@@ -72,10 +69,7 @@ export default function OrdersScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <Logo />
-        <Text style={styles.headerTitle}>My Orders</Text>
-      </View>
+      <ScreenHeader title="My Orders" showLogo />
       {orders.length === 0 ? (
         <View style={styles.empty}>
           <MaterialIcons name="inventory-2" size={64} color={Colors.borderLight} />
@@ -100,22 +94,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.bgPage,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderGray,
-    minHeight: 56,
-  },
-  headerTitle: {
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.semibold,
-    color: Colors.textDark,
-  },
+
   list: {
     padding: Spacing.lg,
     paddingBottom: 100,

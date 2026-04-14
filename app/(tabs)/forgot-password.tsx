@@ -7,6 +7,7 @@ import { FormInput } from '@/components/ui/FormInput';
 import { Button } from '@/components/ui/Button';
 import { useAlert } from '@/template';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
+import { validateEmail, isEmail } from '@/utils/validation';
 
 type ResetStep = 'email' | 'otp' | 'new_password';
 
@@ -24,6 +25,10 @@ export default function ForgotPasswordScreen() {
   const handleSendOTP = async () => {
     if (!identifier) {
       showAlert('Error', 'Please enter your email or phone number');
+      return;
+    }
+    if (isEmail(identifier) && !validateEmail(identifier)) {
+      showAlert('Invalid Email', 'Please enter a valid email address (e.g. name@example.com)');
       return;
     }
     setLoading(true);
@@ -144,7 +149,7 @@ export default function ForgotPasswordScreen() {
 
           <Button
             label="Back to Sign In"
-            onPress={() => router.push('/auth')}
+            onPress={() => router.back()}
             variant="ghost"
             fullWidth
           />

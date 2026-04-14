@@ -157,7 +157,7 @@ export function SavingsCalculator({ compact = false }: SavingsCalculatorProps) {
   const handleGetQuote = () => {
     showAlert(
       'Quote Request Received!',
-      `Our team will contact you with a custom quote for ${fmt(parseFloat(pelletPrice) * results.pelletNeeded)} kg/month of Biomass Pellets within 24 hours.`
+      `Our team will contact you with a custom quote for ${fmt(results.pelletNeeded)} kg/month of Biomass Pellets (≈ ₹${fmt(results.pelletCost)}/month), saving you ₹${fmt(results.monthlySavings)}/month. We'll reach out within 24 hours.`
     );
   };
 

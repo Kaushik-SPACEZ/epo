@@ -11,6 +11,7 @@ import { Logo } from '@/components/feature/Logo';
 import { FormInput } from '@/components/ui/FormInput';
 import { Button } from '@/components/ui/Button';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
+import { validateEmail } from '@/utils/validation';
 
 export default function AuthScreen() {
   const insets = useSafeAreaInsets();
@@ -39,6 +40,10 @@ export default function AuthScreen() {
       showAlert('Missing Fields', 'Please enter email and password');
       return;
     }
+    if (!validateEmail(siEmail)) {
+      showAlert('Invalid Email', 'Please enter a valid email address (e.g. name@example.com)');
+      return;
+    }
     const ok = await signIn(siEmail, siPassword);
     if (ok) {
       router.back();
@@ -50,6 +55,10 @@ export default function AuthScreen() {
   const handleSignUp = async () => {
     if (!suName || !suEmail || !suPhone || !suPassword || !suConfirm) {
       showAlert('Missing Fields', 'Please fill all required fields');
+      return;
+    }
+    if (!validateEmail(suEmail)) {
+      showAlert('Invalid Email', 'Please enter a valid email address (e.g. name@example.com)');
       return;
     }
     if (suPassword !== suConfirm) {
@@ -87,21 +96,7 @@ export default function AuthScreen() {
           </Text>
         </View>
 
-        {/* Tabs */}
-        <View style={styles.tabRow}>
-          <Pressable
-            style={[styles.tabBtn, tab === 'signin' && styles.activeTab]}
-            onPress={() => setTab('signin')}
-          >
-            <Text style={[styles.tabText, tab === 'signin' && styles.activeTabText]}>Sign In</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.tabBtn, tab === 'signup' && styles.activeTab]}
-            onPress={() => setTab('signup')}
-          >
-            <Text style={[styles.tabText, tab === 'signup' && styles.activeTabText]}>Sign Up</Text>
-          </Pressable>
-        </View>
+
 
         {/* Form */}
         <View style={styles.form}>
@@ -136,6 +131,12 @@ export default function AuthScreen() {
                 loading={isLoading}
                 style={styles.submitBtn}
               />
+              <View style={styles.switchRow}>
+                <Text style={styles.switchText}>Don't have an account? </Text>
+                <Pressable onPress={() => setTab('signup')}>
+                  <Text style={styles.switchLink}>Sign Up</Text>
+                </Pressable>
+              </View>
             </>
           ) : (
             <>
@@ -191,19 +192,16 @@ export default function AuthScreen() {
                 loading={isLoading}
                 style={styles.submitBtn}
               />
+              <View style={styles.switchRow}>
+                <Text style={styles.switchText}>Already have an account? </Text>
+                <Pressable onPress={() => setTab('signin')}>
+                  <Text style={styles.switchLink}>Sign In</Text>
+                </Pressable>
+              </View>
             </>
           )}
 
-          <View style={styles.switchRow}>
-            <Text style={styles.switchText}>
-              {tab === 'signin' ? "Don't have an account? " : 'Already have an account? '}
-            </Text>
-            <Pressable onPress={() => setTab(tab === 'signin' ? 'signup' : 'signin')}>
-              <Text style={styles.switchLink}>
-                {tab === 'signin' ? 'Sign Up' : 'Sign In'}
-              </Text>
-            </Pressable>
-          </View>
+
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -218,7 +216,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.lg,
     paddingBottom: 12,
@@ -227,33 +224,26 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   headerTitle: {
-    fontSize: FontSize.body,
-    fontWeight: FontWeight.semibold,
-    color: Colors.textMedium,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    backgroundColor: Colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderGray,
-  },
-  tabBtn: {
     flex: 1,
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  activeTab: {
-    borderBottomColor: Colors.primary,
-  },
-  tabText: {
-    fontSize: FontSize.body,
+    fontSize: FontSize.lg,
     fontWeight: FontWeight.semibold,
+    color: Colors.textDark,
+    textAlign: 'center',
+    marginRight: 34,
+  },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: Spacing.lg,
+  },
+  switchText: {
+    fontSize: FontSize.sm,
     color: Colors.textMedium,
   },
-  activeTabText: {
-    color: Colors.textDark,
+  switchLink: {
+    fontSize: FontSize.sm,
+    color: Colors.primary,
+    fontWeight: FontWeight.semibold,
   },
   form: {
     backgroundColor: Colors.white,
@@ -276,18 +266,5 @@ const styles = StyleSheet.create({
   submitBtn: {
     marginTop: 4,
   },
-  switchRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: Spacing.lg,
-  },
-  switchText: {
-    fontSize: FontSize.sm,
-    color: Colors.textMedium,
-  },
-  switchLink: {
-    fontSize: FontSize.sm,
-    color: Colors.primary,
-    fontWeight: FontWeight.semibold,
-  },
+
 });

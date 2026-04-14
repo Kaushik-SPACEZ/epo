@@ -5,7 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrder } from '@/hooks/useOrder';
-import { Logo } from '@/components/feature/Logo';
+import { ScreenHeader } from '@/components/feature/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
 
@@ -28,10 +28,7 @@ export default function ProfileScreen() {
       contentContainerStyle={{ paddingBottom: 100 }}
       showsVerticalScrollIndicator={false}
     >
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <Logo />
-        <Text style={styles.headerTitle}>Profile</Text>
-      </View>
+      <ScreenHeader title="Profile" showLogo />
 
       {user ? (
         <>
@@ -111,22 +108,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.bgPage,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderGray,
-    minHeight: 56,
-  },
-  headerTitle: {
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.semibold,
-    color: Colors.textDark,
-  },
+
   avatarSection: {
     backgroundColor: Colors.white,
     alignItems: 'center',

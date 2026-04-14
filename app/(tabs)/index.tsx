@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, Pressable, ImageBackground, Linking,
+  View, Text, ScrollView, StyleSheet, Pressable, Linking, ImageBackground,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -40,9 +40,9 @@ export default function HomeScreen() {
         <Logo size="md" />
         <View style={styles.headerActions}>
           {user ? (
-            <View style={styles.avatarMini}>
+            <Pressable style={styles.avatarMini} onPress={() => router.push('/profile')}>
               <Text style={styles.avatarMiniText}>{user.name.charAt(0).toUpperCase()}</Text>
-            </View>
+            </Pressable>
           ) : (
             <Pressable onPress={() => router.push('/auth')} style={styles.signInBtn}>
               <Text style={styles.signInText}>Sign In</Text>
@@ -62,7 +62,7 @@ export default function HomeScreen() {
       <ImageBackground
         source={require('@/assets/images/hero-biomass.png')}
         style={styles.hero}
-        imageStyle={{ opacity: 0.92 }}
+        imageStyle={{ opacity: 0.85 }}
       >
         <View style={styles.heroOverlay}>
           <Text style={styles.heroTitle}>Powering a{'\n'}Sustainable Future</Text>
@@ -200,9 +200,10 @@ const styles = StyleSheet.create({
     height: 200,
     width: '100%',
     justifyContent: 'flex-end',
+    backgroundColor: '#1a6b2f',
   },
   heroOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.42)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
   },
