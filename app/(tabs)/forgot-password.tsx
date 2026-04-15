@@ -7,6 +7,7 @@ import { FormInput } from '@/components/ui/FormInput';
 import { Button } from '@/components/ui/Button';
 import { useAlert } from '@/template';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
+import api from '@/services/api';
 
 type ResetStep = 'email' | 'otp' | 'new_password';
 
@@ -19,6 +20,7 @@ export default function ForgotPasswordScreen() {
   const [identifier, setIdentifier] = useState('');
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [resetToken, setResetToken] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSendOTP = async () => {
@@ -26,11 +28,27 @@ export default function ForgotPasswordScreen() {
       showAlert('Error', 'Please enter your email or phone number');
       return;
     }
+    
     setLoading(true);
-    setTimeout(() => {
+    try {
+      // Determine if identifier is email or phone
+      const isEmail = identifier.includes('@');
+      const payload = isEmail ? { email: identifier } : { phone: identifier };
+      
+      const response = await api.auth.forgotPassword(payload);
+      
+      if (response.success) {
+        showAlert('Success', 'OTP sent successfully! Check your phone/email.');
+        setStep('otp');
+      } else {
+        showAlert('Error', response.message || 'Failed to send OTP');
+      }
+    } catch (error: any) {
+      console.error('[Forgot Password] Send OTP error:', error);
+      showAlert('Error', error.response?.data?.message || 'Failed to send OTP. Please try again.');
+    } finally {
       setLoading(false);
-      setStep('otp');
-    }, 1000);
+    }
   };
 
   const handleVerifyOTP = async () => {
@@ -38,11 +56,30 @@ export default function ForgotPasswordScreen() {
       showAlert('Error', 'Please enter a valid OTP');
       return;
     }
+    
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await api.auth.verifyOtp({
+        identifier,
+        otp,
+      });
+      
+      if (response.success) {
+        // Store reset token if provided by backend
+        if (response.data?.reset_token) {
+          setResetToken(response.data.reset_token);
+        }
+        showAlert('Success', 'OTP verified successfully!');
+        setStep('new_password');
+      } else {
+        showAlert('Error', response.message || 'Invalid OTP');
+      }
+    } catch (error: any) {
+      console.error('[Forgot Password] Verify OTP error:', error);
+      showAlert('Error', error.response?.data?.message || 'Invalid OTP. Please try again.');
+    } finally {
       setLoading(false);
-      setStep('new_password');
-    }, 1000);
+    }
   };
 
   const handleResetPassword = async () => {
@@ -50,12 +87,26 @@ export default function ForgotPasswordScreen() {
       showAlert('Error', 'Password must be at least 6 characters');
       return;
     }
+    
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await api.auth.resetPassword({
+        new_password: newPassword,
+        confirm_password: newPassword,
+      });
+      
+      if (response.success) {
+        showAlert('Success', 'Password has been reset successfully!');
+        router.push('/auth');
+      } else {
+        showAlert('Error', response.message || 'Failed to reset password');
+      }
+    } catch (error: any) {
+      console.error('[Forgot Password] Reset password error:', error);
+      showAlert('Error', error.response?.data?.message || 'Failed to reset password. Please try again.');
+    } finally {
       setLoading(false);
-      showAlert('Success', 'Password has been reset successfully!');
-      router.push('/');
-    }, 1000);
+    }
   };
 
   return (

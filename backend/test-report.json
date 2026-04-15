@@ -1,0 +1,204 @@
+{
+  "total": 29,
+  "passed": 24,
+  "failed": 5,
+  "skipped": 0,
+  "tests": [
+    {
+      "name": "POST /auth/register - Valid registration",
+      "status": "pass",
+      "message": "201 - 1946ms",
+      "time": 1946
+    },
+    {
+      "name": "POST /auth/register - Duplicate email (409)",
+      "status": "pass",
+      "message": "409 - 48ms",
+      "time": 48
+    },
+    {
+      "name": "POST /auth/register - Invalid email (422)",
+      "status": "pass",
+      "message": "422 - 41ms",
+      "time": 41
+    },
+    {
+      "name": "POST /auth/register - Weak password (422)",
+      "status": "pass",
+      "message": "422 - 43ms",
+      "time": 43
+    },
+    {
+      "name": "POST /auth/login - Valid login",
+      "status": "pass",
+      "message": "200 - 242ms",
+      "time": 242
+    },
+    {
+      "name": "POST /auth/login - Wrong password (401)",
+      "status": "pass",
+      "message": "401 - 315ms",
+      "time": 315
+    },
+    {
+      "name": "GET /auth/me - With valid token",
+      "status": "pass",
+      "message": "200 - 40ms",
+      "time": 40
+    },
+    {
+      "name": "GET /auth/me - Without token (401)",
+      "status": "pass",
+      "message": "401 - 41ms",
+      "time": 41
+    },
+    {
+      "name": "POST /auth/refresh - Refresh token",
+      "status": "pass",
+      "message": "200 - 51ms",
+      "time": 51
+    },
+    {
+      "name": "POST /auth/forgot-password - Send OTP",
+      "status": "pass",
+      "message": "200 - 295ms",
+      "time": 295
+    },
+    {
+      "name": "POST /auth/verify-otp - Invalid OTP (401)",
+      "status": "pass",
+      "message": "401 - 41ms",
+      "time": 41
+    },
+    {
+      "name": "POST /auth/reset-password - Without valid token (401)",
+      "status": "pass",
+      "message": "401 - 41ms",
+      "time": 41
+    },
+    {
+      "name": "GET /products - Get all products",
+      "status": "pass",
+      "message": "200 - 40ms",
+      "time": 40
+    },
+    {
+      "name": "GET /products/:id - Get single product",
+      "status": "pass",
+      "message": "200 - 57ms",
+      "time": 57
+    },
+    {
+      "name": "GET /products/:id/configurations - Get configurations",
+      "status": "pass",
+      "message": "200 - 42ms",
+      "time": 42
+    },
+    {
+      "name": "POST /orders - Create order with valid data",
+      "status": "pass",
+      "message": "201 - 51ms",
+      "time": 51
+    },
+    {
+      "name": "POST /orders - Missing required fields (422)",
+      "status": "fail",
+      "message": "Expected 422, got 400",
+      "error": {
+        "success": false,
+        "message": "items array is required and must contain at least one item"
+      },
+      "time": 52
+    },
+    {
+      "name": "GET /orders - Get all orders",
+      "status": "pass",
+      "message": "200 - 40ms",
+      "time": 40
+    },
+    {
+      "name": "GET /orders/:id - Get single order",
+      "status": "pass",
+      "message": "200 - 51ms",
+      "time": 51
+    },
+    {
+      "name": "PUT /orders/:id/status - Update order status",
+      "status": "pass",
+      "message": "200 - 41ms",
+      "time": 41
+    },
+    {
+      "name": "GET /users/:id - Get user by ID",
+      "status": "fail",
+      "message": "Expected 200, got 403",
+      "error": {
+        "success": false,
+        "message": "Forbidden"
+      },
+      "time": 56
+    },
+    {
+      "name": "PUT /users/:id - Update user",
+      "status": "fail",
+      "message": "Expected 200, got 403",
+      "error": {
+        "success": false,
+        "message": "Forbidden"
+      },
+      "time": 39
+    },
+    {
+      "name": "GET /users/:id/orders - Get user orders",
+      "status": "fail",
+      "message": "Expected 200, got 403",
+      "error": {
+        "success": false,
+        "message": "Forbidden"
+      },
+      "time": 48
+    },
+    {
+      "name": "GET /users/email/:email - Get user by email",
+      "status": "pass",
+      "message": "200 - 40ms",
+      "time": 40
+    },
+    {
+      "name": "PUT /users/:id/password - Change password",
+      "status": "fail",
+      "message": "Expected 200, got 403",
+      "error": {
+        "success": false,
+        "message": "Forbidden"
+      },
+      "time": 41
+    },
+    {
+      "name": "DELETE /users/:id - Delete user unauthorized (403)",
+      "status": "pass",
+      "message": "403 - 40ms",
+      "time": 40
+    },
+    {
+      "name": "GET /statistics/orders - Get order statistics",
+      "status": "pass",
+      "message": "200 - 40ms",
+      "time": 40
+    },
+    {
+      "name": "GET /statistics/active-orders - Get active orders",
+      "status": "pass",
+      "message": "200 - 64ms",
+      "time": 64
+    },
+    {
+      "name": "POST /auth/logout - Logout with token",
+      "status": "pass",
+      "message": "200 - 45ms",
+      "time": 45
+    }
+  ],
+  "startTime": "2026-04-15T04:48:20.790Z",
+  "endTime": "2026-04-15T04:48:24.770Z"
+}
