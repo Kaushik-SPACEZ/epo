@@ -1,5 +1,6 @@
-import React, { createContext, useState, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import api, { CreateOrderRequest, Order as ApiOrder } from '../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface OrderProduct {
   id: string;
@@ -54,6 +55,22 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const [currentCustomer, setCurrentCustomer] = useState<CustomerDetails | null>(null);
   const [orders, setOrders] = useState<PlacedOrder[]>([]);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+
+  // Fetch orders when component mounts and user is logged in
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        const token = await AsyncStorage.getItem('auth_token');
+        if (token) {
+          await fetchOrders();
+        }
+      } catch (error) {
+        console.error('[Order] Error loading orders on mount:', error);
+      }
+    };
+    
+    loadOrders();
+  }, []);
 
   const placeOrder = async (): Promise<PlacedOrder | null> => {
     if (!currentProduct || !currentCustomer) return null;
