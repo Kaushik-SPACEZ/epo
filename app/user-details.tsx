@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, Pressable,
-  KeyboardAvoidingView, Platform, Modal, Animated,
+  KeyboardAvoidingView, Platform, Modal, Animated, BackHandler,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -254,6 +254,34 @@ export default function UserDetailsScreen() {
 
   const isEditing = mode === 'edit' || mode === 'new';
   const activeSet = sets[activeIdx];
+
+  // ── Handle hardware back button (Android) and browser back (Web) ──────────
+  useEffect(() => {
+    // For Android
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      router.push('/product-selection');
+      return true; // Prevent default behavior
+    });
+
+    // For Web - intercept browser back button
+    const handlePopState = (event: PopStateEvent) => {
+      event.preventDefault();
+      router.push('/product-selection');
+    };
+
+    if (Platform.OS === 'web') {
+      window.addEventListener('popstate', handlePopState);
+      // Push a dummy state so back button can be intercepted
+      window.history.pushState(null, '', window.location.href);
+    }
+
+    return () => {
+      backHandler.remove();
+      if (Platform.OS === 'web') {
+        window.removeEventListener('popstate', handlePopState);
+      }
+    };
+  }, [router]);
 
   // ── Show toast helper ─────────────────────────────────────────────────────
   const showToast = (message: string) => {
