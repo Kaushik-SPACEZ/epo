@@ -2,7 +2,7 @@ export const PRODUCTS = [
   {
     id: 'pellets',
     name: 'Biomass Pellets',
-    image: require('@/assets/images/product-pellets.png'),
+    image: require('@/assets/images/product-pellets .png'),
     price: 8.5,
     unit: 'kg',
     tag: 'Most Used 🔥',
@@ -16,7 +16,7 @@ export const PRODUCTS = [
   {
     id: 'briquettes',
     name: 'Biomass Stove',
-    image: require('@/assets/images/product-stove.png'),
+    image: require('@/assets/images/product-stove .png'),
     price: 7.0,
     unit: 'kg',
     tag: 'Eco Choice 🌿',
@@ -30,7 +30,7 @@ export const PRODUCTS = [
   {
     id: 'chips',
     name: 'Biomass Burner',
-    image: require('@/assets/images/product-burner.png'),
+    image: require('@/assets/images/product-burner .png'),
     price: 5.5,
     unit: 'kg',
     tag: 'Best Value 💰',

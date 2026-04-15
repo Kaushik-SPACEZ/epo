@@ -5,7 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrder } from '@/hooks/useOrder';
-import { Logo } from '@/components/feature/Logo';
+import { ScreenHeader } from '@/components/feature/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
 import { PlacedOrder } from '@/contexts/OrderContext';
@@ -56,10 +56,7 @@ export default function OrdersScreen() {
   if (!user) {
     return (
       <View style={styles.container}>
-        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-          <Logo />
-          <Text style={styles.headerTitle}>My Orders</Text>
-        </View>
+        <ScreenHeader title="My Orders" showLogo />
         <View style={styles.empty}>
           <MaterialIcons name="person-outline" size={72} color={Colors.borderLight} />
           <Text style={styles.emptyTitle}>Sign In Required</Text>
@@ -72,24 +69,35 @@ export default function OrdersScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <Logo />
-        <Text style={styles.headerTitle}>My Orders</Text>
-      </View>
+      <ScreenHeader title="My Orders" showLogo />
       {orders.length === 0 ? (
         <View style={styles.empty}>
           <MaterialIcons name="inventory-2" size={64} color={Colors.borderLight} />
           <Text style={styles.emptyTitle}>No orders yet</Text>
           <Text style={styles.emptyText}>Your orders will appear here after you place them</Text>
+          <Button 
+            label="Start Ordering" 
+            onPress={() => router.push('/product-selection')} 
+            style={{ marginTop: 20 }} 
+          />
         </View>
       ) : (
-        <FlatList
-          data={orders}
-          keyExtractor={o => o.id}
-          renderItem={({ item }) => <OrderCard order={item} />}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-        />
+        <>
+          <FlatList
+            data={orders}
+            keyExtractor={o => o.id}
+            renderItem={({ item }) => <OrderCard order={item} />}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+          />
+          <View style={styles.fabContainer}>
+            <Button 
+              label="Place New Order" 
+              onPress={() => router.push('/product-selection')}
+              fullWidth
+            />
+          </View>
+        </>
       )}
     </View>
   );
@@ -100,22 +108,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.bgPage,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderGray,
-    minHeight: 56,
-  },
-  headerTitle: {
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.semibold,
-    color: Colors.textDark,
-  },
+
   list: {
     padding: Spacing.lg,
     paddingBottom: 100,
@@ -189,5 +182,16 @@ const styles = StyleSheet.create({
     color: Colors.textMedium,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: Spacing.lg,
+    paddingBottom: Spacing.lg + 60,
+    backgroundColor: Colors.white,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderGray,
   },
 });

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { useAlert } from '@/template';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
 import api from '@/services/api';
+import { validateEmail, isEmail } from '@/utils/validation';
 
 type ResetStep = 'email' | 'otp' | 'new_password';
 
@@ -28,12 +29,15 @@ export default function ForgotPasswordScreen() {
       showAlert('Error', 'Please enter your email or phone number');
       return;
     }
-    
+    if (isEmail(identifier) && !validateEmail(identifier)) {
+      showAlert('Invalid Email', 'Please enter a valid email address (e.g. name@example.com)');
+      return;
+    }
     setLoading(true);
     try {
       // Determine if identifier is email or phone
-      const isEmail = identifier.includes('@');
-      const payload = isEmail ? { email: identifier } : { phone: identifier };
+      const isEmailIdentifier = identifier.includes('@');
+      const payload = isEmailIdentifier ? { email: identifier } : { phone: identifier };
       
       const response = await api.auth.forgotPassword(payload);
       
@@ -119,7 +123,7 @@ export default function ForgotPasswordScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Logo />
+          <Logo align="center" />
         </View>
 
         <View style={styles.card}>
@@ -195,7 +199,7 @@ export default function ForgotPasswordScreen() {
 
           <Button
             label="Back to Sign In"
-            onPress={() => router.push('/auth')}
+            onPress={() => router.back()}
             variant="ghost"
             fullWidth
           />

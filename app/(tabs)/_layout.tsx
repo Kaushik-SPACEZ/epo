@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Platform } from 'react-native';
+import { Platform, Image, View } from 'react-native';
 import { Colors } from '@/constants/theme';
 
 export default function TabLayout() {
@@ -38,6 +38,7 @@ export default function TabLayout() {
         },
       }}
     >
+      {/* ── Visible tabs ── */}
       <Tabs.Screen
         name="index"
         options={{
@@ -68,9 +69,17 @@ export default function TabLayout() {
       <Tabs.Screen
         name="calculator"
         options={{
-          title: 'Calculator',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="calculate" size={size} color={color} />
+          title: 'Savings',
+          tabBarIcon: ({ size, focused }) => (
+            <Image 
+              source={require('@/assets/images/save-and-invest.png')}
+              style={{ 
+                width: size * 2.8, 
+                height: size * 2.8, 
+                opacity: 1
+              }}
+              resizeMode="contain"
+            />
           ),
         }}
       />
@@ -83,12 +92,14 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* ── Flow screens — hidden from tab bar, routed via root Stack ── */}
       <Tabs.Screen name="product-selection" options={{ href: null }} />
-      <Tabs.Screen name="user-details" options={{ href: null }} />
-      <Tabs.Screen name="order-summary" options={{ href: null }} />
-      <Tabs.Screen name="auth" options={{ href: null }} />
-      <Tabs.Screen name="forgot-password" options={{ href: null }} />
-      <Tabs.Screen name="privacy-policy" options={{ href: null }} />
+      <Tabs.Screen name="user-details"       options={{ href: null }} />
+      <Tabs.Screen name="order-summary"      options={{ href: null }} />
+      <Tabs.Screen name="auth"               options={{ href: null }} />
+      <Tabs.Screen name="forgot-password"    options={{ href: null }} />
+      <Tabs.Screen name="privacy-policy"     options={{ href: null }} />
     </Tabs>
   );
 }

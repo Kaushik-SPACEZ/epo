@@ -4,10 +4,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAlert } from '@/template';
 import { useRouter } from 'expo-router';
-import { Logo } from '@/components/feature/Logo';
+import { ScreenHeader } from '@/components/feature/ScreenHeader';
 import { FormInput } from '@/components/ui/FormInput';
 import { Button } from '@/components/ui/Button';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
+import { validateEmail } from '@/utils/validation';
 
 const FAQ = [
   {
@@ -28,9 +29,6 @@ const FAQ = [
   },
 ];
 
-function validateEmail(email: string) {
-  return email.toLowerCase().endsWith('@gmail.com') && /^[^\s@]+@gmail\.com$/.test(email.toLowerCase());
-}
 
 export default function QueriesScreen() {
   const insets = useSafeAreaInsets();
@@ -48,7 +46,7 @@ export default function QueriesScreen() {
       return;
     }
     if (!validateEmail(email)) {
-      showAlert('Invalid Email', 'Please enter a valid @gmail.com address');
+      showAlert('Invalid Email', 'Please enter a valid email address (e.g. name@example.com)');
       return;
     }
     setLoading(true);
@@ -66,10 +64,7 @@ export default function QueriesScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-          <Logo />
-          <Text style={styles.headerTitle}>Queries</Text>
-        </View>
+        <ScreenHeader title="Queries" showLogo />
 
         {/* Calculator Banner */}
         <Pressable style={styles.calcBanner} onPress={() => router.push('/calculator')}>
@@ -177,22 +172,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.bgPage,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderGray,
-    minHeight: 56,
-  },
-  headerTitle: {
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.semibold,
-    color: Colors.textDark,
-  },
+
   contactBanner: {
     flexDirection: 'row',
     alignItems: 'center',
