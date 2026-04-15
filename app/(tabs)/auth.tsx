@@ -92,7 +92,7 @@ export default function AuthScreen() {
         <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
           <Logo />
           <Text style={styles.headerTitle}>
-            {tab === 'signin' ? 'Welcome Back' : 'Create Account'}
+            {tab === 'signin' ? 'Welcome' : 'Create Account'}
           </Text>
         </View>
 
