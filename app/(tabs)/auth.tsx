@@ -65,8 +65,8 @@ export default function AuthScreen() {
       showAlert('Password Mismatch', 'Passwords do not match');
       return;
     }
-    if (suPassword.length < 6) {
-      showAlert('Weak Password', 'Password must be at least 6 characters');
+    if (suPassword.length < 8) {
+      showAlert('Weak Password', 'Password must be at least 8 characters');
       return;
     }
     const ok = await signUp(suName, suEmail, suPhone, suPassword);

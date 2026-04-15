@@ -56,8 +56,8 @@ export default function ForgotPasswordScreen() {
   };
 
   const handleVerifyOTP = async () => {
-    if (!otp || otp.length < 4) {
-      showAlert('Error', 'Please enter a valid OTP');
+    if (!otp || otp.length < 6) {
+      showAlert('Error', 'Please enter a valid 6-digit OTP');
       return;
     }
     
@@ -87,8 +87,8 @@ export default function ForgotPasswordScreen() {
   };
 
   const handleResetPassword = async () => {
-    if (!newPassword || newPassword.length < 6) {
-      showAlert('Error', 'Password must be at least 6 characters');
+    if (!newPassword || newPassword.length < 8) {
+      showAlert('Error', 'Password must be at least 8 characters');
       return;
     }
     
@@ -158,7 +158,7 @@ export default function ForgotPasswordScreen() {
               </Text>
               <FormInput
                 label="OTP"
-                placeholder="Enter 4-digit code"
+                placeholder="Enter 6-digit code"
                 value={otp}
                 onChangeText={setOtp}
                 keyboardType="number-pad"

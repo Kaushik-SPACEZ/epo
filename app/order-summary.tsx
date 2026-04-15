@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useOrder } from '@/hooks/useOrder';
 import { ScreenHeader } from '@/components/feature/ScreenHeader';
@@ -26,7 +26,7 @@ export default function OrderSummaryScreen() {
   if (!currentProduct || !currentCustomer) {
     return (
       <View style={styles.container}>
-        <ScreenHeader title="Order Summary" showBack showLogo />
+        <ScreenHeader title="Order Summary" showLogo />
         <View style={styles.empty}>
           <Text style={styles.emptyText}>No order data found. Please start over.</Text>
           <Button label="Go Back" onPress={() => router.back()} style={{ marginTop: 16 }} />
@@ -71,7 +71,7 @@ export default function OrderSummaryScreen() {
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Order Summary" showBack showLogo />
+      <ScreenHeader title="Order Summary" showLogo />
       <ScrollView contentContainerStyle={{ padding: Spacing.lg, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         <View style={styles.orderIdCard}>
           <Text style={styles.orderIdLabel}>Order ID</Text>
