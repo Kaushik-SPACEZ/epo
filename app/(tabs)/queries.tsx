@@ -69,7 +69,7 @@ export default function QueriesScreen() {
         {/* Calculator Banner */}
         <Pressable style={styles.calcBanner} onPress={() => router.push('/calculator')}>
           <View style={styles.calcBannerLeft}>
-            <Text style={styles.calcBannerEmoji}>💰</Text>
+            <MaterialIcons name="savings" size={40} color={Colors.primary} />
             <View>
               <Text style={styles.calcBannerTitle}>Savings Calculator</Text>
               <Text style={styles.calcBannerSub}>See how much you save by switching to biomass</Text>

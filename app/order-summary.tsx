@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useOrder } from '@/hooks/useOrder';
 import { ScreenHeader } from '@/components/feature/ScreenHeader';
@@ -40,10 +40,21 @@ export default function OrderSummaryScreen() {
 
   const handleConfirm = async () => {
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1000));
-    const order = placeOrder();
-    setLoading(false);
-    if (order) setPlacedOrderId(order.id);
+    try {
+      const order = await placeOrder();
+      setLoading(false);
+      if (order) {
+        console.log('✅ Order placed successfully:', order);
+        setPlacedOrderId(order.id);
+      } else {
+        console.error('❌ Order placement failed - no order returned');
+        Alert.alert('Order Failed', 'Failed to place order. Please try again.');
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error('❌ Error placing order:', error);
+      Alert.alert('Error', 'An error occurred while placing your order. Please try again.');
+    }
   };
 
   const handleGoHome = () => {

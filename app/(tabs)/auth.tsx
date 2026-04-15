@@ -90,10 +90,13 @@ export default function AuthScreen() {
       >
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-          <Logo />
+          <View style={styles.headerLogoContainer}>
+            <Logo />
+          </View>
           <Text style={styles.headerTitle}>
             {tab === 'signin' ? 'Welcome' : 'Create Account'}
           </Text>
+          <View style={styles.headerLogoContainer} />
         </View>
 
 
@@ -223,13 +226,15 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.borderGray,
     minHeight: 56,
   },
+  headerLogoContainer: {
+    width: 34,
+  },
   headerTitle: {
     flex: 1,
     fontSize: FontSize.lg,
     fontWeight: FontWeight.semibold,
     color: Colors.textDark,
     textAlign: 'center',
-    marginRight: 34,
   },
   switchRow: {
     flexDirection: 'row',
