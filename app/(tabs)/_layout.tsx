@@ -70,14 +70,16 @@ export default function TabLayout() {
         name="calculator"
         options={{
           title: 'Savings',
-          tabBarIcon: ({ focused, size }) => (
-            <View style={{ width: size, height: size, overflow: 'hidden', alignItems: 'center', justifyContent: 'flex-start' }}>
-              <Image 
-                source={require('@/assets/images/save-and-invest.png')}
-                style={{ width: size * 2.5, height: size * 2.5, marginTop: -size * 0.3, opacity: focused ? 1 : 0.4 }}
-                resizeMode="contain"
-              />
-            </View>
+          tabBarIcon: ({ size, focused }) => (
+            <Image 
+              source={require('@/assets/images/save-and-invest.png')}
+              style={{ 
+                width: size * 2.8, 
+                height: size * 2.8, 
+                opacity: 1
+              }}
+              resizeMode="contain"
+            />
           ),
         }}
       />

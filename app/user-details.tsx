@@ -389,7 +389,7 @@ export default function UserDetailsScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={{ flex: 1, backgroundColor: Colors.bgPage }}>
-        <ScreenHeader title="Your Details" showBack showLogo />
+        <ScreenHeader title="Your Details" showLogo />
 
         <ScrollView
           contentContainerStyle={{ padding: Spacing.lg, paddingBottom: 160 }}

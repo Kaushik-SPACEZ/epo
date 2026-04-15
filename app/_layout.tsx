@@ -17,13 +17,13 @@ export default function RootLayout() {
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(tabs)" />
               {/* Auth flow */}
-              <Stack.Screen name="auth" />
-              <Stack.Screen name="forgot-password" />
-              <Stack.Screen name="privacy-policy" />
+              <Stack.Screen name="auth" options={{ presentation: 'card' }} />
+              <Stack.Screen name="forgot-password" options={{ presentation: 'card' }} />
+              <Stack.Screen name="privacy-policy" options={{ presentation: 'card' }} />
               {/* Order flow — root stack so back() correctly pops */}
-              <Stack.Screen name="product-selection" />
-              <Stack.Screen name="user-details" />
-              <Stack.Screen name="order-summary" />
+              <Stack.Screen name="product-selection" options={{ presentation: 'card' }} />
+              <Stack.Screen name="user-details" options={{ presentation: 'card' }} />
+              <Stack.Screen name="order-summary" options={{ presentation: 'card' }} />
             </Stack>
 
             {/* Logo animation — overlays everything until video finishes */}

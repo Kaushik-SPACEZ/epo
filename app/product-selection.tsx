@@ -82,7 +82,7 @@ export default function ProductSelectionScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bgPage }}>
-      <ScreenHeader title="Select Product" showBack showLogo />
+      <ScreenHeader title="Select Product" showLogo />
       <ScrollView contentContainerStyle={{ padding: Spacing.lg, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         <Text style={styles.label}>Choose Product</Text>
         <View style={styles.productGrid}>

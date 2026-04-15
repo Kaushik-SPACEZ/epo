@@ -73,7 +73,7 @@ export default function ForgotPasswordScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Logo />
+          <Logo align="center" />
         </View>
 
         <View style={styles.card}>

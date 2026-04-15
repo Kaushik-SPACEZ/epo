@@ -75,15 +75,29 @@ export default function OrdersScreen() {
           <MaterialIcons name="inventory-2" size={64} color={Colors.borderLight} />
           <Text style={styles.emptyTitle}>No orders yet</Text>
           <Text style={styles.emptyText}>Your orders will appear here after you place them</Text>
+          <Button 
+            label="Start Ordering" 
+            onPress={() => router.push('/product-selection')} 
+            style={{ marginTop: 20 }} 
+          />
         </View>
       ) : (
-        <FlatList
-          data={orders}
-          keyExtractor={o => o.id}
-          renderItem={({ item }) => <OrderCard order={item} />}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-        />
+        <>
+          <FlatList
+            data={orders}
+            keyExtractor={o => o.id}
+            renderItem={({ item }) => <OrderCard order={item} />}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+          />
+          <View style={styles.fabContainer}>
+            <Button 
+              label="Place New Order" 
+              onPress={() => router.push('/product-selection')}
+              fullWidth
+            />
+          </View>
+        </>
       )}
     </View>
   );
@@ -168,5 +182,16 @@ const styles = StyleSheet.create({
     color: Colors.textMedium,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: Spacing.lg,
+    paddingBottom: Spacing.lg + 60,
+    backgroundColor: Colors.white,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderGray,
   },
 });
