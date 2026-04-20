@@ -74,13 +74,17 @@ export default function OrderSummaryScreen() {
   const handleGoHome = () => {
     clearCurrent();
     setPlacedOrderId(null);
-    router.replace('/(tabs)');
+    // Pop the entire flow stack (product-selection → user-details → order-summary)
+    // back to the tabs root, landing on the Home tab.
+    router.dismissAll();
   };
 
   const handleViewOrder = () => {
     clearCurrent();
     setPlacedOrderId(null);
-    router.replace('/(tabs)/orders');
+    // Pop the flow stack, then switch to the Orders tab.
+    router.dismissAll();
+    router.navigate('/orders');
   };
 
   return (

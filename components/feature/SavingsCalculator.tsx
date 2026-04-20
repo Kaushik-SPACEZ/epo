@@ -168,7 +168,7 @@ export function SavingsCalculator({ compact = false }: SavingsCalculatorProps) {
         [
           {
             text: 'Sign In',
-            onPress: () => router.push('/(tabs)/auth'),
+            onPress: () => router.push('/auth'),
             style: 'default'
           },
           {

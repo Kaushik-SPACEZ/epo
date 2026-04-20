@@ -83,7 +83,7 @@ export default function HomeScreen() {
       <View style={styles.ctaRow}>
         <Button
           label="Start Ordering"
-          onPress={() => router.push('/product-selection')}
+          onPress={() => router.navigate('/product-selection')}
           style={styles.ctaBtn}
         />
         <Button

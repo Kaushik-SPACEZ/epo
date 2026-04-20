@@ -236,7 +236,7 @@ export default function ProductSelectionScreen() {
                 purpose: PURPOSES.find(p => p.id === selectedPurpose)?.label || '',
                 subPurpose: selectedSubPurpose === 'Custom' ? customSubPurpose.trim() : selectedSubPurpose,
               });
-              router.push('/(tabs)/auth');
+              router.push('/auth');
             },
             style: 'default'
           },
@@ -259,7 +259,7 @@ export default function ProductSelectionScreen() {
       purpose: PURPOSES.find(p => p.id === selectedPurpose)?.label || '',
       subPurpose: selectedSubPurpose === 'Custom' ? customSubPurpose.trim() : selectedSubPurpose,
     });
-    router.push('/user-details');
+    router.navigate('/user-details');
   };
 
   return (

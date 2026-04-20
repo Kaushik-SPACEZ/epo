@@ -572,7 +572,7 @@ export default function UserDetailsScreen() {
         udyamNumber: set.d.udyam, gstNumber: set.d.gst || undefined,
       });
     }
-    router.push('/order-summary');
+    router.navigate('/order-summary');
   };
 
   // ── Render ────────────────────────────────────────────────────────────────

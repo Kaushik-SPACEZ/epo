@@ -119,7 +119,7 @@ export default function ForgotPasswordScreen() {
       
       if (response.success) {
         showAlert('Success', 'Password has been reset successfully!');
-        router.push('/auth');
+        router.navigate('/auth');
       } else {
         showAlert('Error', response.message || 'Failed to reset password');
       }
@@ -217,7 +217,7 @@ export default function ForgotPasswordScreen() {
 
           <Button
             label="Back to Sign In"
-            onPress={() => router.push('/(tabs)/auth')}
+            onPress={() => router.back()}
             variant="ghost"
             fullWidth
           />
