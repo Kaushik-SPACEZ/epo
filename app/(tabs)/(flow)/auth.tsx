@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, Pressable, KeyboardAvoidingView, Platform, Modal, TextInput, ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useAlert } from '@/template';
@@ -18,8 +18,18 @@ export default function AuthScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { signIn, signUp, isLoading } = useAuth();
+  const { signIn, signUp, isLoading, user } = useAuth();
   const { showAlert } = useAlert();
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        if (!user) {
+          router.dismiss();
+        }
+      };
+    }, [user, router])
+  );
 
   const [tab, setTab] = useState<'signin' | 'signup'>(
     params.tab === 'signup' ? 'signup' : 'signin'
