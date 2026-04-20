@@ -1,4 +1,4 @@
-uimport React, { createContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api, { User as ApiUser, AuthResponse } from '../services/api';
 
