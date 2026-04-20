@@ -152,7 +152,7 @@ export default function QueriesScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Contact Us</Text>
         {[
-          { icon: 'email' as const, label: 'ecosudarbiomasspellets@gmail.com' },
+          { icon: 'email' as const, label: 'info@ecosudar.com' },
           { icon: 'phone' as const, label: '+91 63799 35362' },
           { icon: 'location-on' as const, label: '49/D, EB Avenue, Kanchipuram,\nTamil Nadu, India - 631502' },
         ].map(c => (

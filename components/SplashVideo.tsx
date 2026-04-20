@@ -47,8 +47,8 @@ function NativeVideo({ onEnd }: { onEnd: () => void }) {
   return (
     <Video
       source={require('@/assets/splash-logo.mp4')}
-      style={{ width: 250, height: 250 }}
-      resizeMode={ResizeMode.CONTAIN}
+      style={{ width: '100%', height: '100%' }}
+      resizeMode={ResizeMode.COVER}
       shouldPlay
       isLooping={false}
       isMuted
@@ -64,11 +64,17 @@ export function SplashVideo({ onFinish }: Props) {
   const fadeOut = useCallback(() => {
     if (calledRef.current) return;
     calledRef.current = true;
+    
+    // Call onFinish immediately to start loading the app
+    // while the fade animation is still running
+    onFinish();
+    
+    // Fade out animation runs in parallel
     Animated.timing(opacity, {
       toValue: 0,
       duration: 500,
       useNativeDriver: Platform.OS !== 'web',
-    }).start(() => onFinish());
+    }).start();
   }, [opacity, onFinish]);
 
   // Safety fallback — move on after 6s if video never ends
@@ -95,7 +101,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#F3F4F6', // Match app's bgPage color for smooth fade
     zIndex: 9999,
     elevation: 9999,
     justifyContent: 'center',

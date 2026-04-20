@@ -1,57 +1,129 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
-import { useOrder } from '@/hooks/useOrder';
+import { useAlert } from '@/template';
 import { ScreenHeader } from '@/components/feature/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
-import { PlacedOrder } from '@/contexts/OrderContext';
+import api from '@/services/api';
+
+// Order type from API
+interface ApiOrder {
+  id: number;
+  order_number: string;
+  order_status: string;
+  payment_status: string;
+  total_amount: number;
+  created_at: string;
+  customer_name?: string;
+  customer_type?: string;
+}
 
 const STATUS_COLORS: Record<string, string> = {
   pending: '#F59E0B',
   confirmed: Colors.primary,
-  delivered: '#6B7280',
+  processing: '#3B82F6',
+  shipped: '#8B5CF6',
+  delivered: '#10B981',
+  cancelled: '#EF4444',
 };
 
-function OrderCard({ order }: { order: PlacedOrder }) {
+function OrderCard({ order }: { order: ApiOrder }) {
   return (
     <View style={styles.orderCard}>
       <View style={styles.orderHeader}>
-        <Text style={styles.orderId}>{order.id}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[order.status] + '20', borderColor: STATUS_COLORS[order.status] }]}>
-          <Text style={[styles.statusText, { color: STATUS_COLORS[order.status] }]}>
-            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+        <Text style={styles.orderId}>{order.order_number}</Text>
+        <View style={[styles.statusBadge, { backgroundColor: (STATUS_COLORS[order.order_status] || Colors.textMedium) + '20', borderColor: STATUS_COLORS[order.order_status] || Colors.textMedium }]}>
+          <Text style={[styles.statusText, { color: STATUS_COLORS[order.order_status] || Colors.textMedium }]}>
+            {order.order_status.charAt(0).toUpperCase() + order.order_status.slice(1)}
           </Text>
         </View>
       </View>
       <View style={styles.orderRow}>
-        <Text style={styles.orderLabel}>Product</Text>
-        <Text style={styles.orderValue}>{order.product.name}</Text>
+        <Text style={styles.orderLabel}>Order ID</Text>
+        <Text style={styles.orderValue}>#{order.id}</Text>
       </View>
       <View style={styles.orderRow}>
-        <Text style={styles.orderLabel}>Quantity</Text>
-        <Text style={styles.orderValue}>{order.product.quantity} kg</Text>
+        <Text style={styles.orderLabel}>Total Amount</Text>
+        <Text style={[styles.orderValue, styles.totalValue]}>₹{order.total_amount.toLocaleString()}</Text>
       </View>
       <View style={styles.orderRow}>
-        <Text style={styles.orderLabel}>Total</Text>
-        <Text style={[styles.orderValue, styles.totalValue]}>₹{order.total.toLocaleString()}</Text>
+        <Text style={styles.orderLabel}>Payment</Text>
+        <Text style={styles.orderValue}>{order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}</Text>
       </View>
       <View style={styles.orderRow}>
         <Text style={styles.orderLabel}>Date</Text>
-        <Text style={styles.orderValue}>{order.placedAt.toLocaleDateString('en-IN')}</Text>
+        <Text style={styles.orderValue}>{new Date(order.created_at).toLocaleDateString('en-IN')}</Text>
       </View>
     </View>
   );
 }
 
 export default function OrdersScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { orders } = useOrder();
   const { user } = useAuth();
+  const { showAlert } = useAlert();
+  
+  const [orders, setOrders] = useState<ApiOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Fetch orders from API
+  const fetchOrders = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setLoading(true);
+      const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+      console.log('[Orders] Fetching orders for user:', userId);
+      
+      // Add limit parameter to fetch more orders
+      const response = await api.users.getOrders(userId, { limit: 100 });
+      
+      console.log('[Orders] API response:', response);
+      console.log('[Orders] Number of orders fetched:', response.data?.length || 0);
+      
+      if (response.success && response.data) {
+        setOrders(response.data as any);
+        console.log('[Orders] Orders set in state:', response.data.length);
+      } else {
+        console.error('[Orders] Failed to load orders:', response);
+        showAlert('Error', 'Failed to load orders');
+      }
+    } catch (error: any) {
+      console.error('[Orders] Fetch error:', error);
+      showAlert('Error', error.response?.data?.error || 'Failed to load orders');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Fetch orders on mount and when user changes
+  useEffect(() => {
+    if (user) {
+      fetchOrders();
+    }
+  }, [user]);
+
+  // Refresh orders when tab is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user) {
+        console.log('[Orders] Tab focused - refreshing orders');
+        fetchOrders();
+      }
+    }, [user])
+  );
+
+  // Handle pull to refresh
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchOrders();
+  };
 
   if (!user) {
     return (
@@ -62,6 +134,18 @@ export default function OrdersScreen() {
           <Text style={styles.emptyTitle}>Sign In Required</Text>
           <Text style={styles.emptyText}>Sign in to view and track your orders</Text>
           <Button label="Sign In" onPress={() => router.push('/auth')} style={{ marginTop: 20 }} />
+        </View>
+      </View>
+    );
+  }
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ScreenHeader title="My Orders" showLogo />
+        <View style={styles.empty}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={[styles.emptyText, { marginTop: 16 }]}>Loading your orders...</Text>
         </View>
       </View>
     );
@@ -85,10 +169,12 @@ export default function OrdersScreen() {
         <>
           <FlatList
             data={orders}
-            keyExtractor={o => o.id}
+            keyExtractor={(item, index) => item?.id?.toString() || `order-${index}`}
             renderItem={({ item }) => <OrderCard order={item} />}
             contentContainerStyle={styles.list}
             showsVerticalScrollIndicator={false}
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
           />
           <View style={styles.fabContainer}>
             <Button 
@@ -188,10 +274,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: Spacing.lg,
-    paddingBottom: Spacing.lg + 60,
-    backgroundColor: Colors.white,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderGray,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: 80,
+    paddingBottom: 10,
+    backgroundColor: 'transparent',
   },
 });

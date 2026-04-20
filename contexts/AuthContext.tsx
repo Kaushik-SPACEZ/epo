@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+uimport React, { createContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api, { User as ApiUser, AuthResponse } from '../services/api';
 
@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       console.error('[Auth] Registration error:', error.response?.data || error.message);
       setIsLoading(false);
-      return false;
+      throw error; // Re-throw error so auth.tsx can catch it
     }
   };
 

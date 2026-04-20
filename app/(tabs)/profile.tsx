@@ -1,26 +1,60 @@
-import React from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Linking } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView, Linking, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
-import { useOrder } from '@/hooks/useOrder';
 import { ScreenHeader } from '@/components/feature/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
+import api from '@/services/api';
 
 const MENU_ITEMS = [
   { icon: 'inventory-2' as const, label: 'My Orders', route: '/orders' },
   { icon: 'help-outline' as const, label: 'Help & Support', route: '/queries' },
-  { icon: 'info-outline' as const, label: 'About Eco Sudar', url: 'https://www.ecosudar.com/' },
+  { icon: 'info-outline' as const, label: 'About Eco Sudar', url: 'https://www.ecosudar.com/about-us' },
   { icon: 'privacy-tip' as const, label: 'Privacy Policy', route: '/privacy-policy' },
 ];
 
 export default function ProfileScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, signOut } = useAuth();
-  const { orders } = useOrder();
+  
+  const [stats, setStats] = useState({ total: 0, pending: 0, delivered: 0 });
+  const [loading, setLoading] = useState(true);
+
+  // Fetch order statistics from API
+  const fetchStats = async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
+      const response = await api.users.getOrders(userId, { limit: 100 });
+      
+      if (response.success && response.data) {
+        const orders = response.data as any[];
+        setStats({
+          total: orders.length,
+          pending: orders.filter((o: any) => o.order_status === 'pending').length,
+          delivered: orders.filter((o: any) => o.order_status === 'delivered').length,
+        });
+      }
+    } catch (error) {
+      console.error('[Profile] Failed to fetch stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Refresh stats when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchStats();
+    }, [user])
+  );
 
   return (
     <ScrollView
@@ -42,19 +76,27 @@ export default function ProfileScreen() {
 
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
-              <Text style={styles.statNum}>{orders.length}</Text>
+              {loading ? (
+                <ActivityIndicator size="small" color={Colors.primary} />
+              ) : (
+                <Text style={styles.statNum}>{stats.total}</Text>
+              )}
               <Text style={styles.statLbl}>Total Orders</Text>
             </View>
             <View style={[styles.statBox, styles.statBorder]}>
-              <Text style={styles.statNum}>
-                {orders.filter(o => o.status === 'pending').length}
-              </Text>
+              {loading ? (
+                <ActivityIndicator size="small" color={Colors.primary} />
+              ) : (
+                <Text style={styles.statNum}>{stats.pending}</Text>
+              )}
               <Text style={styles.statLbl}>Pending</Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={styles.statNum}>
-                {orders.filter(o => o.status === 'delivered').length}
-              </Text>
+              {loading ? (
+                <ActivityIndicator size="small" color={Colors.primary} />
+              ) : (
+                <Text style={styles.statNum}>{stats.delivered}</Text>
+              )}
               <Text style={styles.statLbl}>Delivered</Text>
             </View>
           </View>

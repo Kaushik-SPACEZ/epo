@@ -123,9 +123,9 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      {/* Applications */}
+      {/* Features */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Applications</Text>
+        <Text style={styles.cardTitle}>Features</Text>
         <View style={styles.appGrid}>
           {APPS.map(app => (
             <View key={app.label} style={styles.appCard}>

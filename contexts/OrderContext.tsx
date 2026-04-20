@@ -73,18 +73,43 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const placeOrder = async (): Promise<PlacedOrder | null> => {
-    if (!currentProduct || !currentCustomer) return null;
+    console.log('[Order] placeOrder called');
+    console.log('[Order] currentProduct:', currentProduct);
+    console.log('[Order] currentCustomer:', currentCustomer);
+    
+    if (!currentProduct || !currentCustomer) {
+      console.error('[Order] Missing product or customer data');
+      return null;
+    }
     
     setIsPlacingOrder(true);
     try {
-      // Map product string IDs to numeric IDs for API
-      const productIdMap: { [key: string]: number } = {
-        'pellets': 1,
-        'briquettes': 2,
-        'burner': 3,
-      };
+      // Convert product ID to number
+      let numericProductId: number;
       
-      const numericProductId = productIdMap[currentProduct.id] || 1;
+      if (typeof currentProduct.id === 'string') {
+        // Try to parse as number first (for API products)
+        const parsed = parseInt(currentProduct.id, 10);
+        
+        if (!isNaN(parsed)) {
+          // It's a numeric string like "1", "2", "3"
+          numericProductId = parsed;
+        } else {
+          // It's a string ID like "pellets", "briquettes", "burner" - map to numbers
+          const productIdMap: { [key: string]: number } = {
+            'pellets': 1,
+            'briquettes': 2,
+            'burner': 3,
+            'chips': 3,
+          };
+          numericProductId = productIdMap[currentProduct.id] || 1;
+        }
+      } else {
+        numericProductId = currentProduct.id;
+      }
+      
+      console.log('[Order] Product ID:', currentProduct.id, '→ Numeric:', numericProductId);
+      console.log('[Order] Product quantity:', currentProduct.quantity);
       
       // Prepare order data for API
       const orderData: CreateOrderRequest = {
@@ -124,6 +149,10 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         
         setOrders(prev => [localOrder, ...prev]);
         setIsPlacingOrder(false);
+        
+        // Refresh orders from API to get updated list
+        fetchOrders().catch(err => console.error('[Order] Failed to refresh orders:', err));
+        
         return localOrder;
       }
       
@@ -132,13 +161,16 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       console.error('[Order] Place order error:', error.response?.data || error.message);
       setIsPlacingOrder(false);
-      return null;
+      
+      // Re-throw the error so it can be caught in the UI with the proper message
+      throw error;
     }
   };
 
   const fetchOrders = async () => {
     try {
-      const response = await api.orders.getAll({ page: 1, limit: 50 });
+      // Increase limit to 100 to fetch more orders
+      const response = await api.orders.getAll({ page: 1, limit: 100 });
       
       if (response.success && response.data) {
         // Convert API orders to local format

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Logo } from '@/components/feature/Logo';
 import { FormInput } from '@/components/ui/FormInput';
@@ -23,6 +23,18 @@ export default function ForgotPasswordScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [resetToken, setResetToken] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Reset form when screen comes into focus (when navigating back)
+  useFocusEffect(
+    useCallback(() => {
+      // Reset all fields when screen gains focus
+      setStep('email');
+      setIdentifier('');
+      setOtp('');
+      setNewPassword('');
+      setResetToken('');
+    }, [])
+  );
 
   const handleSendOTP = async () => {
     if (!identifier) {
@@ -56,8 +68,8 @@ export default function ForgotPasswordScreen() {
   };
 
   const handleVerifyOTP = async () => {
-    if (!otp || otp.length < 6) {
-      showAlert('Error', 'Please enter a valid 6-digit OTP');
+    if (!otp || otp.length < 4 || otp.length > 6) {
+      showAlert('Error', 'Please enter a valid 6 digit OTP');
       return;
     }
     
@@ -92,12 +104,18 @@ export default function ForgotPasswordScreen() {
       return;
     }
     
+    if (!resetToken) {
+      showAlert('Error', 'Reset token is missing. Please verify OTP again.');
+      return;
+    }
+    
     setLoading(true);
     try {
+      // The reset token needs to be sent in the Authorization header
       const response = await api.auth.resetPassword({
         new_password: newPassword,
         confirm_password: newPassword,
-      });
+      }, resetToken);
       
       if (response.success) {
         showAlert('Success', 'Password has been reset successfully!');
@@ -158,7 +176,7 @@ export default function ForgotPasswordScreen() {
               </Text>
               <FormInput
                 label="OTP"
-                placeholder="Enter 6-digit code"
+                placeholder="Enter 6 digit code"
                 value={otp}
                 onChangeText={setOtp}
                 keyboardType="number-pad"
@@ -199,7 +217,7 @@ export default function ForgotPasswordScreen() {
 
           <Button
             label="Back to Sign In"
-            onPress={() => router.back()}
+            onPress={() => router.push('/(tabs)/auth')}
             variant="ghost"
             fullWidth
           />

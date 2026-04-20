@@ -72,10 +72,14 @@ export default function TabLayout() {
           title: 'Savings',
           tabBarIcon: ({ size, focused }) => (
             <Image 
-              source={require('@/assets/images/save-and-invest.png')}
+              source={
+                focused 
+                  ? require('@/assets/images/save-and-invest-green.png')
+                  : require('@/assets/images/save-and-invest.png')
+              }
               style={{ 
-                width: size * 2.8, 
-                height: size * 2.8, 
+                width: size * 1.3, 
+                height: size * 1.3, 
                 opacity: 1
               }}
               resizeMode="contain"

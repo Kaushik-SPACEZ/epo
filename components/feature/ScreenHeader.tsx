@@ -10,16 +10,15 @@ interface ScreenHeaderProps {
   title?: string;
   showBack?: boolean;
   showLogo?: boolean;
-  right?: React.ReactNode;
 }
 
-export function ScreenHeader({ title, showBack = false, showLogo = true, right }: ScreenHeaderProps) {
+export function ScreenHeader({ title, showBack = false, showLogo = true }: ScreenHeaderProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
   return (
     <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-      {/* Left: back button + logo — zIndex above title so taps register */}
+      {/* Left: logo */}
       <View style={styles.left}>
         {showBack ? (
           <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
@@ -29,17 +28,13 @@ export function ScreenHeader({ title, showBack = false, showLogo = true, right }
         {showLogo ? <Logo /> : null}
       </View>
 
-      {/* Centered title — pointerEvents="none" so it NEVER blocks touches */}
-      {title ? (
-        <View style={styles.titleContainer} pointerEvents="none">
-          <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
-            {title}
-          </Text>
-        </View>
-      ) : null}
+      {/* Centered title */}
+      <Text style={styles.title}>
+        {title}
+      </Text>
 
-      {/* Right side */}
-      <View style={styles.right}>{right}</View>
+      {/* Right spacer */}
+      <View style={styles.right} />
     </View>
   );
 }
@@ -48,7 +43,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.lg,
     paddingBottom: 12,
@@ -57,30 +51,23 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   left: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flex: 1,
+    width: 34,
   },
   backBtn: {
     padding: 4,
   },
-  // Absolute overlay — pointerEvents="none" on wrapping View passes all touches through
-  titleContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
   title: {
-    fontSize: FontSize.md,
+    flex: 1,
+    fontSize: FontSize.lg,
     fontWeight: FontWeight.semibold,
     color: Colors.textDark,
     textAlign: 'center',
-    paddingHorizontal: 90, // keeps text away from left/right buttons
+  },
+  titleSpacer: {
+    flex: 1,
   },
   right: {
-    flex: 1,
+    width: 34,
     alignItems: 'flex-end',
   },
 });

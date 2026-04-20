@@ -1,9 +1,25 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 
 // API Configuration
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
 const API_TIMEOUT = 30000;
+
+// Global error handler
+let globalErrorHandler: ((title: string, message: string) => void) | null = null;
+
+export const setGlobalErrorHandler = (handler: (title: string, message: string) => void) => {
+  globalErrorHandler = handler;
+};
+
+const showError = (title: string, message: string) => {
+  if (globalErrorHandler) {
+    globalErrorHandler(title, message);
+  } else {
+    Alert.alert(title, message);
+  }
+};
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -36,19 +52,93 @@ apiClient.interceptors.response.use(
     console.log(`[API Response] ${response.status} ${response.config.url}`);
     return response;
   },
-  async (error: AxiosError) => {
+  async (error: AxiosError<any>) => {
+    let errorTitle = 'Error';
+    let errorMessage = 'Something went wrong. Please try again.';
+
     if (error.response) {
       console.error(`[API Error] ${error.response.status} ${error.config?.url}`, error.response.data);
       
-      // Handle 401 Unauthorized - Token expired
-      if (error.response.status === 401) {
-        await AsyncStorage.removeItem('auth_token');
-        await AsyncStorage.removeItem('auth_user');
-        // You might want to redirect to login here
+      const status = error.response.status;
+      const data = error.response.data;
+
+      // Extract error message from response
+      const apiError = data?.error || data?.message || '';
+
+      switch (status) {
+        case 400:
+          errorTitle = 'Invalid Request';
+          errorMessage = apiError || 'Please check your input and try again.';
+          break;
+
+        case 401:
+          // Check if it's a token expiration
+          if (apiError.toLowerCase().includes('token') || apiError.toLowerCase().includes('expired') || apiError.toLowerCase().includes('invalid')) {
+            errorTitle = 'Session Expired';
+            errorMessage = 'Your session has expired. Please sign in again.';
+            // Clear auth data
+            await AsyncStorage.removeItem('auth_token');
+            await AsyncStorage.removeItem('auth_user');
+          } else {
+            errorTitle = 'Unauthorized';
+            errorMessage = apiError || 'Please sign in to continue.';
+          }
+          break;
+
+        case 403:
+          errorTitle = 'Access Denied';
+          errorMessage = apiError || 'You don\'t have permission to perform this action.';
+          break;
+
+        case 404:
+          errorTitle = 'Not Found';
+          errorMessage = apiError || 'The requested resource was not found.';
+          break;
+
+        case 409:
+          errorTitle = 'Conflict';
+          errorMessage = apiError || 'This action conflicts with existing data.';
+          break;
+
+        case 422:
+          errorTitle = 'Validation Error';
+          errorMessage = apiError || 'Please check your input and try again.';
+          break;
+
+        case 429:
+          errorTitle = 'Too Many Requests';
+          errorMessage = 'You\'re making too many requests. Please wait a moment and try again.';
+          break;
+
+        case 500:
+        case 502:
+        case 503:
+        case 504:
+          errorTitle = 'Server Error';
+          errorMessage = 'Our servers are experiencing issues. Please try again later.';
+          break;
+
+        default:
+          errorMessage = apiError || errorMessage;
       }
-    } else {
+
+      // Show error to user
+      showError(errorTitle, errorMessage);
+
+    } else if (error.request) {
+      // Network error - no response received
       console.error('[API Error] Network error', error.message);
+      errorTitle = 'Network Error';
+      errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.';
+      showError(errorTitle, errorMessage);
+
+    } else {
+      // Something else happened
+      console.error('[API Error] Request setup error', error.message);
+      errorMessage = error.message || errorMessage;
+      showError(errorTitle, errorMessage);
     }
+
     return Promise.reject(error);
   }
 );
@@ -201,13 +291,32 @@ export const api = {
       return response.data;
     },
 
+    sendOtp: async (data: { email: string }): Promise<ApiResponse<{
+      message: string;
+      identifier: string;
+      type: string;
+      purpose: string;
+      expires_in: number;
+    }>> => {
+      const response = await apiClient.post('/auth/send-otp', data);
+      return response.data;
+    },
+
     verifyOtp: async (data: { identifier: string; otp: string }): Promise<ApiResponse<{ reset_token: string }>> => {
       const response = await apiClient.post('/auth/verify-otp', data);
       return response.data;
     },
 
-    resetPassword: async (data: { new_password: string; confirm_password: string }): Promise<ApiResponse> => {
-      const response = await apiClient.post('/auth/reset-password', data);
+    resetPassword: async (
+      data: { new_password: string; confirm_password: string },
+      resetToken?: string
+    ): Promise<ApiResponse> => {
+      const config = resetToken ? {
+        headers: {
+          'Authorization': `Bearer ${resetToken}`
+        }
+      } : {};
+      const response = await apiClient.post('/auth/reset-password', data, config);
       return response.data;
     },
   },
@@ -237,6 +346,33 @@ export const api = {
       params?: { size?: string; purpose?: string; is_available?: boolean }
     ): Promise<ApiResponse<ProductConfiguration[]>> => {
       const response = await apiClient.get(`/products/${productId}/configurations`, { params });
+      return response.data;
+    },
+
+    getAvailableSizes: async (productId: number): Promise<ApiResponse<{
+      product_id: number;
+      product_name: string;
+      available_sizes: string[];
+    }>> => {
+      const response = await apiClient.get(`/products/${productId}/sizes`);
+      return response.data;
+    },
+
+    getPriceBySize: async (
+      productId: number,
+      size: string,
+      purpose?: string
+    ): Promise<ApiResponse<{
+      product_id: number;
+      product_name: string;
+      size: string;
+      purpose: string;
+      config_id: number | null;
+      price: number;
+      source: 'config' | 'base_price';
+    }>> => {
+      const params = purpose ? { size, purpose } : { size };
+      const response = await apiClient.get(`/products/${productId}/price`, { params });
       return response.data;
     },
   },

@@ -3,7 +3,9 @@ import {
   View, Text, StyleSheet, Pressable, ScrollView, TextInput,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useAlert } from '@/template';
+import { useAuth } from '@/hooks/useAuth';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
 
 // ─── Data Model ────────────────────────────────────────────────────────────────
@@ -100,6 +102,8 @@ interface SavingsCalculatorProps {
 
 export function SavingsCalculator({ compact = false }: SavingsCalculatorProps) {
   const { showAlert } = useAlert();
+  const router = useRouter();
+  const { user } = useAuth();
   const [expanded, setExpanded] = useState(!compact);
   const [selectedFuel, setSelectedFuel] = useState<FuelType>(FUELS[0]);
   const [consumption, setConsumption] = useState('100');
@@ -155,6 +159,28 @@ export function SavingsCalculator({ compact = false }: SavingsCalculatorProps) {
   };
 
   const handleGetQuote = () => {
+    // Check if user is authenticated
+    if (!user) {
+      // Show sign-in prompt for non-authenticated users
+      showAlert(
+        'Sign In Required',
+        'Please sign in to request a custom quote and get personalized pricing.',
+        [
+          {
+            text: 'Sign In',
+            onPress: () => router.push('/(tabs)/auth'),
+            style: 'default'
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
+      return;
+    }
+
+    // Show quote details for authenticated users
     showAlert(
       'Quote Request Received!',
       `Our team will contact you with a custom quote for ${fmt(results.pelletNeeded)} kg/month of Biomass Pellets (≈ ₹${fmt(results.pelletCost)}/month), saving you ₹${fmt(results.monthlySavings)}/month. We'll reach out within 24 hours.`
@@ -185,7 +211,9 @@ export function SavingsCalculator({ compact = false }: SavingsCalculatorProps) {
       {/* Card Header */}
       <View style={styles.calcHeader}>
         <View style={styles.calcTitleRow}>
-          <Text style={styles.calcEmoji}>💰</Text>
+          <View style={styles.iconCircle}>
+            <MaterialIcons name="savings" size={28} color={Colors.primary} />
+          </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.calcTitle}>Savings Calculator</Text>
             <Text style={styles.calcSub}>Compare your current fuel cost vs Biomass Pellets</Text>
@@ -410,6 +438,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     flex: 1,
+  },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   calcEmoji: { fontSize: 28 },
   calcTitle: {

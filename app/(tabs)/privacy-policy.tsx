@@ -40,7 +40,7 @@ export default function PrivacyPolicyScreen() {
         
         <Text style={styles.heading}>5. Contact Us</Text>
         <Text style={styles.paragraph}>
-          If you have any questions about this Privacy Policy, please contact us at ecosudarbiomasspellets@gmail.com.
+          If you have any questions about this Privacy Policy, please contact us at info@ecosudar.com.
         </Text>
       </View>
     </ScrollView>
