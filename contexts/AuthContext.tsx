@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       console.error('[Auth] Login error:', error.response?.data || error.message);
       setIsLoading(false);
-      return false;
+      throw error; // Re-throw so auth.tsx can handle approval errors
     }
   };
 
@@ -92,24 +92,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user_type: userType,
       });
       
-      if (response.success && response.data) {
-        const { user: apiUser, token, refresh_token } = response.data;
-        
-        // Store token
-        await AsyncStorage.setItem('auth_token', token);
-        await AsyncStorage.setItem('refresh_token', refresh_token);
-        
-        // Convert API user to local user format
-        const localUser: User = {
-          id: apiUser.user_id.toString(),
-          name: apiUser.name,
-          email: apiUser.email,
-          phone: apiUser.phone,
-          user_type: apiUser.user_type,
-        };
-        
-        setUser(localUser);
-        await AsyncStorage.setItem('auth_user', JSON.stringify(localUser));
+      if (response.success) {
+        // User registered successfully but NOT logged in (pending approval)
+        // No tokens are returned, user must wait for admin approval
         setIsLoading(false);
         return true;
       }

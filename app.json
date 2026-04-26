@@ -25,7 +25,7 @@
       "favicon": "./assets/images/logo.png"
     },
     "splash": {
-      "image": "./assets/images/logo-new.png",
+      "image": "./assets/images/logo-new-padded.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -39,8 +39,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "92bf278f-4f03-4998-b450-1dee4c316a5b"
+        "projectId": "05650ac0-d820-46d3-9def-b054daf8a338"
       }
-    }
+    },
+    "owner": "kaushik_2004"
   }
 }

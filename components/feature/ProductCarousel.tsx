@@ -61,7 +61,6 @@ export function ProductCarousel() {
               transition={200}
             />
             <Text style={styles.productName}>{product.name}</Text>
-            <Text style={styles.price}>₹{product.price}/kg</Text>
           </View>
         ))}
       </ScrollView>

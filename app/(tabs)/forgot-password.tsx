@@ -49,7 +49,9 @@ export default function ForgotPasswordScreen() {
     try {
       // Determine if identifier is email or phone
       const isEmailIdentifier = identifier.includes('@');
-      const payload = isEmailIdentifier ? { email: identifier } : { phone: identifier };
+      const payload = isEmailIdentifier 
+        ? { email: identifier, purpose: 'password_reset' } 
+        : { phone: identifier, purpose: 'password_reset' };
       
       const response = await api.auth.forgotPassword(payload);
       
@@ -78,6 +80,7 @@ export default function ForgotPasswordScreen() {
       const response = await api.auth.verifyOtp({
         identifier,
         otp,
+        purpose: 'password_reset',
       });
       
       if (response.success) {
@@ -217,7 +220,14 @@ export default function ForgotPasswordScreen() {
 
           <Button
             label="Back to Sign In"
-            onPress={() => router.back()}
+            onPress={() => {
+              setStep('email');
+              setIdentifier('');
+              setOtp('');
+              setNewPassword('');
+              setResetToken('');
+              router.push('/auth');
+            }}
             variant="ghost"
             fullWidth
           />

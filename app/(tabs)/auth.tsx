@@ -76,7 +76,7 @@ export default function AuthScreen() {
 
     setIsSendingOtp(true);
     try {
-      const response = await api.auth.sendOtp({ email: suEmail });
+      const response = await api.auth.sendOtp({ email: suEmail, purpose: 'email_verification' });
       if (response.success) {
         setOtpSent(true);
         setShowOtpModal(true);
@@ -101,7 +101,7 @@ export default function AuthScreen() {
 
     setIsVerifyingOtp(true);
     try {
-      const response = await api.auth.verifyOtp({ identifier: suEmail, otp });
+      const response = await api.auth.verifyOtp({ identifier: suEmail, otp, purpose: 'email_verification' });
       if (response.success) {
         setIsEmailVerified(true);
         setShowOtpModal(false);
@@ -125,11 +125,30 @@ export default function AuthScreen() {
       showAlert('Invalid Email', 'Please enter a valid email address (e.g. name@example.com)');
       return;
     }
-    const ok = await signIn(siEmail, siPassword);
-    if (ok) {
-      router.back();
-    } else {
-      showAlert('Sign In Failed', 'Invalid credentials. Please try again.');
+    
+    try {
+      const ok = await signIn(siEmail, siPassword);
+      if (ok) {
+        router.back();
+      }
+    } catch (error: any) {
+      // Extract error message from API response
+      const errorMessage = error.response?.data?.message 
+        || error.response?.data?.error 
+        || error.message 
+        || 'Sign in failed';
+      
+      // Check for approval status errors
+      if (errorMessage.toLowerCase().includes('pending admin approval')) {
+        showAlert(
+          'Account Pending Approval',
+          errorMessage
+        );
+      } else if (errorMessage.toLowerCase().includes('not approved')) {
+        showAlert('Registration Not Approved', errorMessage);
+      } else {
+        showAlert('Sign In Failed', errorMessage);
+      }
     }
   };
 
@@ -200,7 +219,22 @@ export default function AuthScreen() {
     try {
       const ok = await signUp(suName, suEmail, suPhone, suPassword);
       if (ok) {
-        router.back();
+        // Show pending approval message
+        showAlert(
+          'Registration Submitted!',
+          'Your account is pending admin approval. You will receive an email notification once your account has been reviewed and approved. This process typically takes 24-48 hours.'
+        );
+        
+        // Clear form
+        setSuName('');
+        setSuEmail('');
+        setSuPhone('');
+        setSuPassword('');
+        setSuConfirm('');
+        setIsEmailVerified(false);
+        
+        // Switch to sign in tab
+        setTab('signin');
       } else {
         showAlert('Sign Up Failed', 'Please check your details and try again.');
       }

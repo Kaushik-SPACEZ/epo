@@ -36,7 +36,7 @@ export default function OrderSummaryScreen() {
   }
 
   const subtotal = currentProduct.price * currentProduct.quantity;
-  const total = subtotal + DELIVERY_FEE;
+  const total = subtotal; // No delivery fee added
 
   const handleConfirm = async () => {
     console.log('🔵 handleConfirm called - Button clicked!');
@@ -128,10 +128,13 @@ export default function OrderSummaryScreen() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Price Breakdown</Text>
-          <SummaryRow label="Subtotal" value={`₹${subtotal.toLocaleString()}`} />
-          <SummaryRow label="Delivery Fee" value={`₹${DELIVERY_FEE}`} />
-          <View style={styles.totalDivider} />
           <SummaryRow label="Total" value={`₹${total.toLocaleString()}`} bold green />
+          
+          <View style={styles.disclaimerBox}>
+            <Text style={styles.disclaimerText}>
+              * Additional charges such as delivery fee, GST, and other applicable taxes will be communicated separately.
+            </Text>
+          </View>
         </View>
 
         <Button label="Confirm Order" onPress={handleConfirm} fullWidth size="lg" loading={loading} style={{ marginTop: Spacing.lg }} />
@@ -159,4 +162,16 @@ const styles = StyleSheet.create({
   rowBold: { fontWeight: FontWeight.bold, fontSize: FontSize.xl },
   rowGreen: { color: Colors.primary },
   totalDivider: { height: 1, backgroundColor: Colors.borderLight, marginVertical: 8 },
+  disclaimerBox: { 
+    marginTop: Spacing.md, 
+    paddingTop: Spacing.md, 
+    borderTopWidth: 1, 
+    borderTopColor: Colors.borderLight 
+  },
+  disclaimerText: { 
+    fontSize: FontSize.xs, 
+    color: '#DC2626', // Red color
+    lineHeight: 18,
+    fontStyle: 'italic'
+  },
 });

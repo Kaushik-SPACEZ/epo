@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, FlatList, ActivityIndicator, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -7,12 +7,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAlert } from '@/template';
 import { ScreenHeader } from '@/components/feature/ScreenHeader';
 import { Button } from '@/components/ui/Button';
+import { OrderDetailsModal } from '@/components/feature/OrderDetailsModal';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
 import api from '@/services/api';
 
 // Order type from API
 interface ApiOrder {
-  id: number;
+  id?: number;
+  order_id?: number;
   order_number: string;
   order_status: string;
   payment_status: string;
@@ -31,9 +33,9 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: '#EF4444',
 };
 
-function OrderCard({ order }: { order: ApiOrder }) {
+function OrderCard({ order, onPress }: { order: ApiOrder; onPress: () => void }) {
   return (
-    <View style={styles.orderCard}>
+    <Pressable style={styles.orderCard} onPress={onPress}>
       <View style={styles.orderHeader}>
         <Text style={styles.orderId}>{order.order_number}</Text>
         <View style={[styles.statusBadge, { backgroundColor: (STATUS_COLORS[order.order_status] || Colors.textMedium) + '20', borderColor: STATUS_COLORS[order.order_status] || Colors.textMedium }]}>
@@ -44,7 +46,7 @@ function OrderCard({ order }: { order: ApiOrder }) {
       </View>
       <View style={styles.orderRow}>
         <Text style={styles.orderLabel}>Order ID</Text>
-        <Text style={styles.orderValue}>#{order.id}</Text>
+        <Text style={styles.orderValue}>#{order.order_id || order.id}</Text>
       </View>
       <View style={styles.orderRow}>
         <Text style={styles.orderLabel}>Total Amount</Text>
@@ -58,7 +60,7 @@ function OrderCard({ order }: { order: ApiOrder }) {
         <Text style={styles.orderLabel}>Date</Text>
         <Text style={styles.orderValue}>{new Date(order.created_at).toLocaleDateString('en-IN')}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -70,6 +72,18 @@ export default function OrdersScreen() {
   const [orders, setOrders] = useState<ApiOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleOrderPress = (orderId: number) => {
+    setSelectedOrderId(orderId);
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setSelectedOrderId(null);
+  };
 
   // Fetch orders from API
   const fetchOrders = async () => {
@@ -169,8 +183,13 @@ export default function OrdersScreen() {
         <>
           <FlatList
             data={orders}
-            keyExtractor={(item, index) => item?.id?.toString() || `order-${index}`}
-            renderItem={({ item }) => <OrderCard order={item} />}
+            keyExtractor={(item, index) => (item?.order_id || item?.id)?.toString() || `order-${index}`}
+            renderItem={({ item }) => (
+              <OrderCard 
+                order={item} 
+                onPress={() => handleOrderPress(item.order_id || item.id || 0)} 
+              />
+            )}
             contentContainerStyle={styles.list}
             showsVerticalScrollIndicator={false}
             refreshing={refreshing}
@@ -185,6 +204,12 @@ export default function OrdersScreen() {
           </View>
         </>
       )}
+      
+      <OrderDetailsModal
+        visible={modalVisible}
+        orderId={selectedOrderId}
+        onClose={handleCloseModal}
+      />
     </View>
   );
 }

@@ -205,6 +205,7 @@ export interface OrderItem {
   product_id: number;
   config_id?: number;
   quantity: number;
+  unit_price?: number; // Price per unit from frontend
   size: string;
   purpose: string;
   sub_purpose?: string;
@@ -286,7 +287,7 @@ export const api = {
       return response.data;
     },
 
-    forgotPassword: async (identifier: { phone?: string; email?: string }): Promise<ApiResponse> => {
+    forgotPassword: async (identifier: { phone?: string; email?: string; purpose?: string }): Promise<ApiResponse> => {
       const response = await apiClient.post('/auth/forgot-password', identifier);
       return response.data;
     },
@@ -302,7 +303,7 @@ export const api = {
       return response.data;
     },
 
-    verifyOtp: async (data: { identifier: string; otp: string }): Promise<ApiResponse<{ reset_token: string }>> => {
+    verifyOtp: async (data: { identifier: string; otp: string; purpose?: string }): Promise<ApiResponse<{ reset_token?: string; verified?: boolean }>> => {
       const response = await apiClient.post('/auth/verify-otp', data);
       return response.data;
     },
@@ -373,6 +374,15 @@ export const api = {
     }>> => {
       const params = purpose ? { size, purpose } : { size };
       const response = await apiClient.get(`/products/${productId}/price`, { params });
+      return response.data;
+    },
+
+    getSubPurposes: async (params?: { 
+      product_id?: number; 
+      size?: string; 
+      purpose?: string 
+    }): Promise<ApiResponse<string[]>> => {
+      const response = await apiClient.get('/products/sub-purposes', { params });
       return response.data;
     },
   },
@@ -449,6 +459,96 @@ export const api = {
 
     getActiveOrders: async (): Promise<ApiResponse> => {
       const response = await apiClient.get('/statistics/active-orders');
+      return response.data;
+    },
+  },
+
+  // ============================================
+  // Queries
+  // ============================================
+  queries: {
+    create: async (data: {
+      name: string;
+      email: string;
+      message: string;
+    }): Promise<ApiResponse<{
+      query_id: number;
+      query_number: string;
+      name: string;
+      email: string;
+      message: string;
+      status: string;
+      created_at: string;
+    }>> => {
+      const response = await apiClient.post('/queries', data);
+      return response.data;
+    },
+
+    getAll: async (params?: {
+      page?: number;
+      limit?: number;
+      status?: 'pending' | 'in_progress' | 'resolved' | 'closed';
+    }): Promise<ApiResponse<{
+      data: any[];
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      };
+    }>> => {
+      const response = await apiClient.get('/queries', { params });
+      return response.data;
+    },
+
+    getById: async (id: number): Promise<ApiResponse> => {
+      const response = await apiClient.get(`/queries/${id}`);
+      return response.data;
+    },
+  },
+
+  // ============================================
+  // Quotes
+  // ============================================
+  quotes: {
+    create: async (data: {
+      name: string;
+      email: string;
+      phone: string;
+      message: string;
+    }): Promise<ApiResponse<{
+      quote_id: number;
+      quote_number: string;
+      name: string;
+      email: string;
+      phone: string;
+      message: string;
+      status: string;
+      created_at: string;
+    }>> => {
+      const response = await apiClient.post('/quotes', data);
+      return response.data;
+    },
+
+    getAll: async (params?: {
+      page?: number;
+      limit?: number;
+      quote_status?: 'pending' | 'processing' | 'sent' | 'accepted' | 'rejected' | 'expired';
+    }): Promise<ApiResponse<{
+      data: any[];
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      };
+    }>> => {
+      const response = await apiClient.get('/quotes', { params });
+      return response.data;
+    },
+
+    getById: async (id: number): Promise<ApiResponse> => {
+      const response = await apiClient.get(`/quotes/${id}`);
       return response.data;
     },
   },

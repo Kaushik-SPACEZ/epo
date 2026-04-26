@@ -117,6 +117,7 @@ const api = {
     getAll: (params) => makeRequest('GET', '/products', params),
     getById: (id) => makeRequest('GET', `/products/${id}`),
     getConfigurations: (id, params) => makeRequest('GET', `/products/${id}/configurations`, params),
+    getSubPurposes: (params) => makeRequest('GET', '/products/sub-purposes', params),
   },
 
   // Orders

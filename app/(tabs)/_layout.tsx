@@ -97,9 +97,13 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Flow stack (order + auth screens) — hidden from tab bar but keeps
-          the tab bar visible because it lives inside this Tabs navigator. */}
-      <Tabs.Screen name="(flow)" options={{ href: null }} />
+      {/* Hidden screens - not shown in tab bar */}
+      <Tabs.Screen name="auth" options={{ href: null }} />
+      <Tabs.Screen name="forgot-password" options={{ href: null }} />
+      <Tabs.Screen name="product-selection" options={{ href: null }} />
+      <Tabs.Screen name="user-details" options={{ href: null }} />
+      <Tabs.Screen name="order-summary" options={{ href: null }} />
+      <Tabs.Screen name="privacy-policy" options={{ href: null }} />
     </Tabs>
   );
 }

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, KeyboardAvoidingView, Platform, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAlert } from '@/template';
 import { useRouter } from 'expo-router';
+import { useAuth } from '@/hooks/useAuth';
 import { ScreenHeader } from '@/components/feature/ScreenHeader';
 import { FormInput } from '@/components/ui/FormInput';
 import { Button } from '@/components/ui/Button';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
 import { validateEmail } from '@/utils/validation';
+import api from '@/services/api';
 
 const FAQ = [
   {
@@ -49,11 +51,28 @@ export default function QueriesScreen() {
       showAlert('Invalid Email', 'Please enter a valid email address (e.g. name@example.com)');
       return;
     }
+
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1000));
-    setLoading(false);
-    setName(''); setEmail(''); setMessage('');
-    showAlert('Query Submitted!', 'Our team will contact you within 24 hours.');
+    try {
+      const response = await api.queries.create({
+        name: name.trim(),
+        email: email.trim(),
+        message: message.trim()
+      });
+
+      if (response.success) {
+        showAlert('Query Submitted!', `Your query (${response.data?.query_number}) has been submitted. Our team will contact you within 24 hours.`);
+        // Reset form
+        setName('');
+        setEmail('');
+        setMessage('');
+      }
+    } catch (error: any) {
+      console.error('[Queries] Submit error:', error);
+      // Error already shown by API interceptor
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -86,7 +86,22 @@ router.post('/refresh', async (req, res) => {
 });
 
 // ============================================
-// 6. POST /api/auth/forgot-password
+// 6. POST /api/auth/send-otp
+// ============================================
+router.post('/send-otp', otpLimiter, validateEmailField, async (req, res) => {
+  try {
+    const result = await api.auth.forgotPassword(req.body);
+    res.json(result);
+  } catch (error) {
+    res.status(error.status || 500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+// ============================================
+// 7. POST /api/auth/forgot-password
 // ============================================
 router.post('/forgot-password', otpLimiter, validateIdentifierIfEmail, async (req, res) => {
   try {
@@ -101,7 +116,7 @@ router.post('/forgot-password', otpLimiter, validateIdentifierIfEmail, async (re
 });
 
 // ============================================
-// 7. POST /api/auth/verify-otp
+// 8. POST /api/auth/verify-otp
 // ============================================
 router.post('/verify-otp', async (req, res) => {
   try {
@@ -117,7 +132,7 @@ router.post('/verify-otp', async (req, res) => {
 });
 
 // ============================================
-// 8. POST /api/auth/reset-password
+// 9. POST /api/auth/reset-password
 // ============================================
 router.post('/reset-password', requireAuth, async (req, res) => {
   try {

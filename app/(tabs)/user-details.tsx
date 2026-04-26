@@ -237,7 +237,7 @@ export default function UserDetailsScreen() {
   // Build the initial profile from user account data
   const initC: CData = { name: user?.name || '', email: user?.email || '', phone: user?.phone || '', address: '', city: '', pincode: '' };
   const initD: DData = { bizName: '', contact: user?.name || '', email: user?.email || '', phone: user?.phone || '', udyam: '', address: '', city: '', pincode: '', gst: '' };
-  const initialSet: DetailSet = { id: '0', userType: 'customer', c: initC, d: initD };
+  const initialSet: DetailSet = { id: '0', userType: user?.user_type || 'customer', c: initC, d: initD };
 
   // ── State ─────────────────────────────────────────────────────────────────
   const [sets, setSets] = useState<DetailSet[]>([initialSet]);   // all saved profiles
@@ -249,7 +249,6 @@ export default function UserDetailsScreen() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Working form fields (used only in edit/new mode)
-  const [userType, setUserType] = useState<UserType>('customer');
   const [c, setC] = useState<CData>(initC);
   const [d, setD] = useState<DData>(initD);
 
@@ -320,7 +319,6 @@ export default function UserDetailsScreen() {
   const handleEditSet = (idx: number) => {
     const set = sets[idx];
     setEditingIdx(idx);
-    setUserType(set.userType);
     setC({ ...set.c });
     setD({ ...set.d });
     setMode('edit');
@@ -331,7 +329,6 @@ export default function UserDetailsScreen() {
   // ── Sheet: add brand-new profile ─────────────────────────────────────────
   const handleAddNew = () => {
     setEditingIdx(null);
-    setUserType(sets[activeIdx].userType);
     setC({ ...EMPTY_C });
     setD({ ...EMPTY_D });
     setMode('new');
@@ -342,8 +339,9 @@ export default function UserDetailsScreen() {
   // ── Save (edit or new) ────────────────────────────────────────────────────
   const handleSave = async () => {
     const errs: Record<string, string> = {};
+    const currentUserType = user?.user_type || 'customer';
 
-    if (userType === 'customer') {
+    if (currentUserType === 'customer') {
       // Name validation
       if (!c.name.trim()) {
         errs.cName = 'Name is required';
@@ -478,7 +476,7 @@ export default function UserDetailsScreen() {
     if (user?.id) {
       try {
         const userId = typeof user.id === 'string' ? parseInt(user.id) : user.id;
-        const updateData = userType === 'customer' ? {
+        const updateData = currentUserType === 'customer' ? {
           name: c.name,
           email: c.email,
           phone: c.phone,
@@ -514,7 +512,7 @@ export default function UserDetailsScreen() {
 
     const newSet: DetailSet = {
       id: editingIdx !== null ? sets[editingIdx].id : Date.now().toString(),
-      userType,
+      userType: user?.user_type || 'customer',
       c: { ...c },
       d: { ...d },
     };
@@ -576,7 +574,7 @@ export default function UserDetailsScreen() {
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
-  const displayType = isEditing ? userType : activeSet.userType;
+  const displayType = user?.user_type || 'customer';
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -588,34 +586,6 @@ export default function UserDetailsScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* ── User type cards ────────────────────────────────────────────── */}
-          <Text style={styles.sectionLabel}>I am a</Text>
-          <View style={styles.typeRow}>
-            {(['customer', 'dealer'] as UserType[]).map(t => {
-              const active = displayType === t;
-              return (
-                <Pressable
-                  key={t}
-                  style={[styles.typeCard, active && styles.typeCardActive]}
-                  onPress={() => {
-                    if (isEditing) {
-                      setUserType(t);
-                    } else {
-                      // In view mode: switch the active set's userType directly
-                      setSets(prev => prev.map((s, i) => i === activeIdx ? { ...s, userType: t } : s));
-                    }
-                  }}
-                >
-                  <MaterialIcons name={t === 'customer' ? 'person' : 'business'} size={32} color={active ? Colors.primary : Colors.textMedium} />
-                  <Text style={[styles.typeTitle, active && styles.typeTitleActive]}>
-                    {t === 'customer' ? 'Customer' : 'Dealer'}
-                  </Text>
-                  <Text style={styles.typeSub}>{t === 'customer' ? 'For personal use' : 'For business'}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-
           {/* ── Edit mode banner ───────────────────────────────────────────── */}
           {isEditing && (
             <View style={styles.editBanner}>
@@ -674,7 +644,7 @@ export default function UserDetailsScreen() {
                 <InfoRow label="Address"        value={activeSet.d.address} />
                 <InfoRow label="City"           value={activeSet.d.city} />
                 <InfoRow label="Pincode"        value={activeSet.d.pincode} />
-                {activeSet.d.gst ? <InfoRow label="GST Number" value={activeSet.d.gst} /> : null}
+                <InfoRow label="GST Number"     value={activeSet.d.gst} />
               </>
             )}
 
@@ -687,7 +657,7 @@ export default function UserDetailsScreen() {
             )}
 
             {/* ── EDIT / NEW MODE — editable inputs ─────────────────────── */}
-            {isEditing && userType === 'customer' && (
+            {isEditing && displayType === 'customer' && (
               <>
                 <FormInput label="Full Name" required icon="person" placeholder="Enter your full name" value={c.name} onChangeText={v => setC(p => ({ ...p, name: v }))} error={errors.cName} />
                 <FormInput label="Email Address" required icon="email" placeholder="Enter your email" value={c.email} onChangeText={v => setC(p => ({ ...p, email: v }))} keyboardType="email-address" autoCapitalize="none" error={errors.cEmail} />
@@ -697,7 +667,7 @@ export default function UserDetailsScreen() {
                 <FormInput label="Pincode" required icon="local-post-office" placeholder="6-digit pincode" value={c.pincode} onChangeText={v => setC(p => ({ ...p, pincode: v }))} keyboardType="number-pad" error={errors.cPincode} />
               </>
             )}
-            {isEditing && userType === 'dealer' && (
+            {isEditing && displayType === 'dealer' && (
               <>
                 <FormInput label="Business Name" required icon="business" placeholder="Enter business name" value={d.bizName} onChangeText={v => setD(p => ({ ...p, bizName: v }))} error={errors.dBizName} />
                 <FormInput label="Contact Person" required icon="person" placeholder="Contact person name" value={d.contact} onChangeText={v => setD(p => ({ ...p, contact: v }))} error={errors.dContact} />
@@ -751,15 +721,6 @@ export default function UserDetailsScreen() {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  sectionLabel: { fontSize: FontSize.body, fontWeight: FontWeight.semibold, color: Colors.textDark, marginBottom: 12 },
-
-  typeRow: { flexDirection: 'row', gap: 12, marginBottom: Spacing.lg },
-  typeCard: { flex: 1, backgroundColor: Colors.white, borderRadius: Radius.lg, borderWidth: 2, borderColor: Colors.borderLight, padding: Spacing.lg, alignItems: 'center', gap: 6 },
-  typeCardActive: { borderColor: Colors.primary, backgroundColor: Colors.primaryLight },
-  typeTitle: { fontSize: FontSize.body, fontWeight: FontWeight.semibold, color: Colors.textMedium },
-  typeTitleActive: { color: Colors.textDark },
-  typeSub: { fontSize: FontSize.xs, color: Colors.textMedium },
-
   editBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: Colors.primaryLight, borderRadius: Radius.md, padding: Spacing.md, marginBottom: Spacing.md, borderWidth: 1, borderColor: Colors.primaryBorder },
   editBannerText: { fontSize: FontSize.sm, color: Colors.primary, flex: 1 },
 

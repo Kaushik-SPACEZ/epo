@@ -12,6 +12,7 @@ function WebVideo({ onEnd }: { onEnd: () => void }) {
   useEffect(() => {
     const v = videoRef.current;
     if (v) {
+      v.playbackRate = 1.5; // Set playback speed to 1.5x
       v.play().catch(() => {});
     }
   }, []);
@@ -37,6 +38,14 @@ function WebVideo({ onEnd }: { onEnd: () => void }) {
 // Native video component using expo-av
 function NativeVideo({ onEnd }: { onEnd: () => void }) {
   const { Video, ResizeMode } = require('expo-av');
+  const videoRef = useRef<any>(null);
+
+  useEffect(() => {
+    // Set playback rate to 1.5x after video loads
+    if (videoRef.current) {
+      videoRef.current.setRateAsync(1.5, true).catch(() => {});
+    }
+  }, []);
 
   const handleStatus = (status: any) => {
     if (status.isLoaded && status.didJustFinish) {
@@ -46,12 +55,14 @@ function NativeVideo({ onEnd }: { onEnd: () => void }) {
 
   return (
     <Video
+      ref={videoRef}
       source={require('@/assets/splash-logo.mp4')}
       style={{ width: '100%', height: '100%' }}
       resizeMode={ResizeMode.COVER}
       shouldPlay
       isLooping={false}
       isMuted
+      rate={1.5}
       onPlaybackStatusUpdate={handleStatus}
     />
   );

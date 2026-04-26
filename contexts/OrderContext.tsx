@@ -123,6 +123,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
           {
             product_id: numericProductId,
             quantity: currentProduct.quantity,
+            unit_price: currentProduct.price, // ✅ Include unit_price from frontend
             size: currentProduct.size,
             purpose: currentProduct.purpose,
             sub_purpose: currentProduct.subPurpose,

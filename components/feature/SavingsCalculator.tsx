@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { useAlert } from '@/template';
 import { useAuth } from '@/hooks/useAuth';
 import { Colors, FontSize, FontWeight, Radius, Spacing } from '@/constants/theme';
+import api from '@/services/api';
 
 // ─── Data Model ────────────────────────────────────────────────────────────────
 
@@ -151,14 +152,25 @@ export function SavingsCalculator({ compact = false }: SavingsCalculatorProps) {
 
   const handleCalculate = () => {
     const qty = parseFloat(consumption);
+    const fPrice = parseFloat(fuelPrice);
+    const pPrice = parseFloat(pelletPrice);
+    
     if (!qty || qty <= 0) {
       showAlert('Invalid Input', 'Please enter a valid monthly consumption.');
+      return;
+    }
+    if (!fPrice || fPrice <= 0) {
+      showAlert('Invalid Input', `Please enter a valid ${selectedFuel.label} price.`);
+      return;
+    }
+    if (!pPrice || pPrice <= 0) {
+      showAlert('Invalid Input', 'Please enter a valid Pellet price.');
       return;
     }
     setShowResults(true);
   };
 
-  const handleGetQuote = () => {
+  const handleGetQuote = async () => {
     // Check if user is authenticated
     if (!user) {
       // Show sign-in prompt for non-authenticated users
@@ -180,11 +192,30 @@ export function SavingsCalculator({ compact = false }: SavingsCalculatorProps) {
       return;
     }
 
-    // Show quote details for authenticated users
-    showAlert(
-      'Quote Request Received!',
-      `Our team will contact you with a custom quote for ${fmt(results.pelletNeeded)} kg/month of Biomass Pellets (≈ ₹${fmt(results.pelletCost)}/month), saving you ₹${fmt(results.monthlySavings)}/month. We'll reach out within 24 hours.`
-    );
+    try {
+      // Format the message for API (without formatting, exact numbers)
+      const unit = selectedFuel.unit; // 'kg' or 'L'
+      const apiMessage = `Customer uses ${consumption} ${unit} of ${selectedFuel.label} at ₹${fuelPrice}/${unit} (₹${Math.round(results.currentCost)}/month). They need ${Math.round(results.pelletNeeded)} kg/month of Biomass Pellets (≈ ₹${Math.round(results.pelletCost)}/month), saving ₹${Math.round(results.monthlySavings)}/month.`;
+
+      // Submit quote request
+      const response = await api.quotes.create({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        message: apiMessage
+      });
+
+      if (response.success) {
+        // Show formatted alert message to user
+        showAlert(
+          'Quote Request Received!',
+          `Our team will contact you with a custom quote for ${fmt(results.pelletNeeded)} kg/month of Biomass Pellets (≈ ₹${fmt(results.pelletCost)}/month), saving you ₹${fmt(results.monthlySavings)}/month. We'll reach out within 24 hours.`
+        );
+      }
+    } catch (error: any) {
+      console.error('[SavingsCalculator] Quote submission error:', error);
+      // Error already shown by API interceptor
+    }
   };
 
   // ── Compact Header (Home page teaser) ─────────────────────────────────────────

@@ -18,11 +18,11 @@ router.get('/', async (req, res) => {
 });
 
 // ============================================
-// 2. GET /api/products/:id
+// 2. GET /api/products/sub-purposes (MUST BE BEFORE /:id)
 // ============================================
-router.get('/:id', async (req, res) => {
+router.get('/sub-purposes', async (req, res) => {
   try {
-    const result = await api.products.getById(req.params.id);
+    const result = await api.products.getSubPurposes(req.query);
     res.json(result);
   } catch (error) {
     res.status(error.status || 500).json({
@@ -38,6 +38,21 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/configurations', async (req, res) => {
   try {
     const result = await api.products.getConfigurations(req.params.id, req.query);
+    res.json(result);
+  } catch (error) {
+    res.status(error.status || 500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+// ============================================
+// 4. GET /api/products/:id (MUST BE LAST)
+// ============================================
+router.get('/:id', async (req, res) => {
+  try {
+    const result = await api.products.getById(req.params.id);
     res.json(result);
   } catch (error) {
     res.status(error.status || 500).json({

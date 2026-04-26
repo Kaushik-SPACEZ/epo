@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, Pressable, TextInput, ActivityIndicator, BackHandler,
+  View, Text, ScrollView, StyleSheet, Pressable, TextInput, ActivityIndicator, BackHandler, FlatList,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -33,6 +33,8 @@ export default function ProductSelectionScreen() {
   const [customSubPurpose, setCustomSubPurpose] = useState('');
   const [selectedPrice, setSelectedPrice] = useState<number>(0);
   const [loadingPrice, setLoadingPrice] = useState(false);
+  const [subPurposes, setSubPurposes] = useState<string[]>([]);
+  const [loadingSubPurposes, setLoadingSubPurposes] = useState(false);
 
   // Reset form when screen comes into focus (when navigating back)
   useFocusEffect(
@@ -120,6 +122,60 @@ export default function ProductSelectionScreen() {
     fetchProducts();
   }, []);
 
+  // Fetch sub-purposes when product, size, and purpose are selected
+  useEffect(() => {
+    const fetchSubPurposes = async () => {
+      if (!selectedProductId || !selectedSize || !selectedPurpose) {
+        setSubPurposes([]);
+        return;
+      }
+
+      // Check if product ID is numeric (from API)
+      const productIdNum = parseInt(selectedProductId);
+      const isNumericId = !isNaN(productIdNum) && productIdNum.toString() === selectedProductId;
+      
+      if (!isNumericId) {
+        // Using hardcoded products - use hardcoded sub-purposes
+        console.log('[ProductSelection] Using hardcoded sub-purposes');
+        const hardcodedSubPurposes = SUB_PURPOSES[selectedPurpose] || [];
+        // Replace "Custom" with "Others"
+        const updatedSubPurposes = hardcodedSubPurposes.map(sp => sp === 'Custom' ? 'Others' : sp);
+        setSubPurposes(updatedSubPurposes);
+        return;
+      }
+
+      // Numeric ID - fetch sub-purposes from API
+      setLoadingSubPurposes(true);
+      try {
+        console.log(`[ProductSelection] Fetching sub-purposes for product ${productIdNum}, size ${selectedSize}, purpose ${selectedPurpose}`);
+        
+        const purposeLabel = PURPOSES.find(p => p.id === selectedPurpose)?.label;
+        const response = await api.products.getSubPurposes({
+          product_id: productIdNum,
+          size: selectedSize,
+          purpose: purposeLabel,
+        });
+
+        if (response.success && response.data) {
+          // Add "Others" as the last option
+          const subPurposesWithOthers = [...response.data, 'Others'];
+          setSubPurposes(subPurposesWithOthers);
+          console.log(`[ProductSelection] ✅ Fetched ${response.data.length} sub-purposes:`, subPurposesWithOthers);
+        } else {
+          console.warn('[ProductSelection] API returned unsuccessful response:', response);
+          setSubPurposes(['Others']); // Fallback to just "Others"
+        }
+      } catch (error: any) {
+        console.error('[ProductSelection] ❌ Failed to fetch sub-purposes:', error.response?.data || error.message);
+        setSubPurposes(['Others']); // Fallback to just "Others"
+      } finally {
+        setLoadingSubPurposes(false);
+      }
+    };
+
+    fetchSubPurposes();
+  }, [selectedProductId, selectedSize, selectedPurpose]);
+
   // Fetch dynamic price when product or size changes
   useEffect(() => {
     const fetchPrice = async () => {
@@ -186,7 +242,7 @@ export default function ProductSelectionScreen() {
   // Use dynamic price if available, otherwise fall back to base price
   const currentPrice = selectedPrice > 0 ? selectedPrice : (selectedProduct?.price || 0);
   const subtotal = currentPrice * quantity;
-  const total = subtotal + DELIVERY_FEE;
+  const total = subtotal; // No delivery fee added
 
   const handleQuantityChange = (text: string) => {
     setQuantityInput(text);
@@ -211,8 +267,8 @@ export default function ProductSelectionScreen() {
       return;
     }
     
-    // Validate custom sub-purpose text if "Custom" is selected
-    if (selectedSubPurpose === 'Custom' && !customSubPurpose.trim()) {
+    // Validate custom sub-purpose text if "Others" is selected
+    if (selectedSubPurpose === 'Others' && !customSubPurpose.trim()) {
       showAlert('Custom Sub-Purpose Required', 'Please enter your custom sub-purpose.');
       return;
     }
@@ -234,7 +290,7 @@ export default function ProductSelectionScreen() {
                 size: selectedSize,
                 quantity,
                 purpose: PURPOSES.find(p => p.id === selectedPurpose)?.label || '',
-                subPurpose: selectedSubPurpose === 'Custom' ? customSubPurpose.trim() : selectedSubPurpose,
+                subPurpose: selectedSubPurpose === 'Others' ? customSubPurpose.trim() : selectedSubPurpose,
               });
               router.push('/auth');
             },
@@ -257,7 +313,7 @@ export default function ProductSelectionScreen() {
       size: selectedSize,
       quantity,
       purpose: PURPOSES.find(p => p.id === selectedPurpose)?.label || '',
-      subPurpose: selectedSubPurpose === 'Custom' ? customSubPurpose.trim() : selectedSubPurpose,
+      subPurpose: selectedSubPurpose === 'Others' ? customSubPurpose.trim() : selectedSubPurpose,
     });
     router.navigate('/user-details');
   };
@@ -273,18 +329,23 @@ export default function ProductSelectionScreen() {
             <Text style={{ marginTop: 12, color: Colors.textMedium }}>Loading products...</Text>
           </View>
         ) : (
-          <View style={styles.productGrid}>
-            {products.map(product => (
+          <FlatList
+            horizontal
+            data={products}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
               <Pressable
-                key={product.id}
-                style={[styles.productCard, selectedProductId === product.id && styles.productCardActive]}
-                onPress={() => { setSelectedProductId(product.id); setSelectedSize(null); }}
+                style={[styles.productCard, selectedProductId === item.id && styles.productCardActive]}
+                onPress={() => { setSelectedProductId(item.id); setSelectedSize(null); }}
               >
-                <Image source={product.image} style={styles.productImage} contentFit="contain" transition={200} />
-                <Text style={styles.productName} numberOfLines={2}>{product.name}</Text>
+                <Image source={item.image} style={styles.productImage} contentFit="contain" transition={200} />
+                <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
               </Pressable>
-            ))}
-          </View>
+            )}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.productCarousel}
+            style={{ marginBottom: Spacing.lg }}
+          />
         )}
 
         {selectedProduct ? (
@@ -309,9 +370,15 @@ export default function ProductSelectionScreen() {
                 </View>
               )}
             </View>
-            <View style={styles.pillRow}>
+            <View style={styles.sizeGrid}>
               {selectedProduct.sizes.map(s => (
-                <PillButton key={s} label={s} selected={selectedSize === s} onPress={() => setSelectedSize(s)} />
+                <Pressable
+                  key={s}
+                  onPress={() => setSelectedSize(s)}
+                  style={[styles.sizeButton, selectedSize === s && styles.sizeButtonActive]}
+                >
+                  <Text style={[styles.sizeButtonText, selectedSize === s && styles.sizeButtonTextActive]}>{s}</Text>
+                </Pressable>
               ))}
             </View>
           </View>
@@ -319,9 +386,25 @@ export default function ProductSelectionScreen() {
 
         <View style={styles.section}>
           <Text style={styles.label}>Purpose</Text>
-          <View style={styles.pillRow}>
-            {PURPOSES.map(p => (
-              <PillButton key={p.id} label={p.label} selected={selectedPurpose === p.id} onPress={() => handlePurposeSelect(p.id)} />
+          <View style={styles.segmentedControl}>
+            {PURPOSES.map((p, index) => (
+              <Pressable
+                key={p.id}
+                style={[
+                  styles.segment,
+                  index === 0 && styles.segmentFirst,
+                  index === PURPOSES.length - 1 && styles.segmentLast,
+                  selectedPurpose === p.id && styles.segmentActive
+                ]}
+                onPress={() => handlePurposeSelect(p.id)}
+              >
+                <Text style={[
+                  styles.segmentText,
+                  selectedPurpose === p.id && styles.segmentTextActive
+                ]}>
+                  {p.label}
+                </Text>
+              </Pressable>
             ))}
           </View>
         </View>
@@ -337,19 +420,30 @@ export default function ProductSelectionScreen() {
             </Pressable>
             {dropdownOpen ? (
               <View style={styles.dropdownMenu}>
-                {SUB_PURPOSES[selectedPurpose].map(sub => (
-                  <Pressable
-                    key={sub}
-                    style={[styles.dropdownItem, selectedSubPurpose === sub && styles.dropdownItemActive]}
-                    onPress={() => { setSelectedSubPurpose(sub); setDropdownOpen(false); setCustomSubPurpose(''); }}
-                  >
-                    <Text style={[styles.dropdownItemText, selectedSubPurpose === sub && styles.dropdownItemTextActive]}>{sub}</Text>
-                    {selectedSubPurpose === sub ? <MaterialIcons name="check" size={16} color={Colors.primary} /> : null}
-                  </Pressable>
-                ))}
+                {loadingSubPurposes ? (
+                  <View style={{ padding: 20, alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color={Colors.primary} />
+                    <Text style={{ marginTop: 8, fontSize: FontSize.sm, color: Colors.textMedium }}>Loading options...</Text>
+                  </View>
+                ) : subPurposes.length > 0 ? (
+                  subPurposes.map(sub => (
+                    <Pressable
+                      key={sub}
+                      style={[styles.dropdownItem, selectedSubPurpose === sub && styles.dropdownItemActive]}
+                      onPress={() => { setSelectedSubPurpose(sub); setDropdownOpen(false); if (sub !== 'Others') setCustomSubPurpose(''); }}
+                    >
+                      <Text style={[styles.dropdownItemText, selectedSubPurpose === sub && styles.dropdownItemTextActive]}>{sub}</Text>
+                      {selectedSubPurpose === sub ? <MaterialIcons name="check" size={16} color={Colors.primary} /> : null}
+                    </Pressable>
+                  ))
+                ) : (
+                  <View style={{ padding: 20, alignItems: 'center' }}>
+                    <Text style={{ fontSize: FontSize.sm, color: Colors.textMedium }}>No options available</Text>
+                  </View>
+                )}
               </View>
             ) : null}
-            {selectedSubPurpose === 'Custom' ? (
+            {selectedSubPurpose === 'Others' ? (
               <View style={{ marginTop: 12 }}>
                 <Text style={[styles.label, { marginBottom: 8 }]}>Please specify</Text>
                 <TextInput
@@ -370,11 +464,11 @@ export default function ProductSelectionScreen() {
           <Text style={styles.label}>Quantity</Text>
           <View style={styles.stepper}>
             <Pressable style={styles.stepBtn} onPress={() => { const n = Math.max(1, quantity - 1); setQuantity(n); setQuantityInput(n.toString()); }}>
-              <MaterialIcons name="remove" size={20} color={Colors.primary} />
+              <MaterialIcons name="remove" size={24} color={Colors.white} />
             </Pressable>
             <TextInput style={styles.stepInput} value={quantityInput} onChangeText={handleQuantityChange} onBlur={handleQuantityBlur} keyboardType="number-pad" selectTextOnFocus />
             <Pressable style={styles.stepBtn} onPress={() => { const n = quantity + 1; setQuantity(n); setQuantityInput(n.toString()); }}>
-              <MaterialIcons name="add" size={20} color={Colors.primary} />
+              <MaterialIcons name="add" size={24} color={Colors.white} />
             </Pressable>
           </View>
         </View>
@@ -382,9 +476,12 @@ export default function ProductSelectionScreen() {
         {selectedProduct ? (
           <View style={styles.priceCard}>
             <Text style={styles.label}>Price Summary</Text>
-            <View style={styles.priceRow}><Text style={styles.priceLabel}>Subtotal</Text><Text style={styles.priceValue}>₹{subtotal.toLocaleString()}</Text></View>
-            <View style={styles.priceRow}><Text style={styles.priceLabel}>Delivery Fee</Text><Text style={styles.priceValue}>₹{DELIVERY_FEE}</Text></View>
             <View style={[styles.priceRow, styles.totalRow]}><Text style={styles.totalLabel}>Total</Text><Text style={styles.totalValue}>₹{total.toLocaleString()}</Text></View>
+            <View style={styles.disclaimerBox}>
+              <Text style={styles.disclaimerText}>
+                * Additional charges such as delivery fee, GST, and other applicable taxes will be communicated separately.
+              </Text>
+            </View>
           </View>
         ) : null}
 
@@ -395,14 +492,114 @@ export default function ProductSelectionScreen() {
 }
 
 const styles = StyleSheet.create({
-  productGrid: { flexDirection: 'row', gap: 10, marginBottom: Spacing.lg },
-  productCard: { flex: 1, backgroundColor: Colors.white, borderRadius: Radius.lg, borderWidth: 2, borderColor: Colors.borderLight, padding: 10, alignItems: 'center' },
-  productCardActive: { borderColor: Colors.primary, backgroundColor: Colors.primaryLight },
-  productImage: { width: 72, height: 72, marginBottom: 6 },
-  productName: { fontSize: FontSize.xs, fontWeight: FontWeight.semibold, color: Colors.textDark, textAlign: 'center' },
+  productCarousel: { paddingRight: Spacing.lg },
+  productCard: { 
+    width: 200, 
+    height: 210, 
+    backgroundColor: Colors.white, 
+    borderRadius: Radius.lg, 
+    borderWidth: 3, 
+    borderColor: Colors.borderLight, 
+    padding: Spacing.md, 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    marginRight: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  productCardActive: { 
+    borderColor: Colors.primary, 
+    backgroundColor: Colors.primaryLight,
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  productImage: { width: 140, height: 140, marginBottom: 12 },
+  productName: { fontSize: FontSize.body, fontWeight: FontWeight.semibold, color: Colors.textDark, textAlign: 'center' },
   section: { marginBottom: Spacing.lg },
   label: { fontSize: FontSize.body, fontWeight: FontWeight.semibold, color: Colors.textDark, marginBottom: 10 },
-  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  pillRow: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    gap: 8,
+    justifyContent: 'space-between',
+  },
+  sizeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  sizeButton: {
+    width: '31%',
+    backgroundColor: Colors.white,
+    borderWidth: 1.5,
+    borderColor: Colors.borderLight,
+    borderRadius: Radius.md,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sizeButtonActive: {
+    backgroundColor: Colors.primaryLight,
+    borderColor: Colors.primary,
+    borderWidth: 2,
+  },
+  sizeButtonText: {
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.semibold,
+    color: Colors.textMedium,
+  },
+  sizeButtonTextActive: {
+    color: Colors.primary,
+    fontWeight: FontWeight.bold,
+  },
+  segmentedControl: {
+    flexDirection: 'row',
+    backgroundColor: Colors.bgLight,
+    borderRadius: Radius.pill,
+    padding: 3,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  segment: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: Radius.pill,
+    backgroundColor: 'transparent',
+  },
+  segmentFirst: {
+    borderTopLeftRadius: Radius.pill,
+    borderBottomLeftRadius: Radius.pill,
+  },
+  segmentLast: {
+    borderTopRightRadius: Radius.pill,
+    borderBottomRightRadius: Radius.pill,
+  },
+  segmentActive: {
+    backgroundColor: Colors.primary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  segmentText: {
+    fontSize: FontSize.body,
+    fontWeight: FontWeight.semibold,
+    color: Colors.textMedium,
+  },
+  segmentTextActive: {
+    color: Colors.white,
+  },
   dropdown: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.borderLight, borderRadius: Radius.md, paddingHorizontal: Spacing.md, paddingVertical: 14 },
   dropdownText: { flex: 1, fontSize: FontSize.body, color: Colors.textDark },
   placeholderText: { color: Colors.textLight },
@@ -411,9 +608,33 @@ const styles = StyleSheet.create({
   dropdownItemActive: { backgroundColor: Colors.primaryLight },
   dropdownItemText: { fontSize: FontSize.body, color: Colors.textDark },
   dropdownItemTextActive: { color: Colors.primary, fontWeight: FontWeight.semibold },
-  stepper: { flexDirection: 'row', alignItems: 'center', gap: Spacing.lg },
-  stepBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.primaryLight, borderWidth: 1, borderColor: Colors.primaryBorder, alignItems: 'center', justifyContent: 'center' },
-  stepInput: { fontSize: FontSize.xl, fontWeight: FontWeight.bold, color: Colors.textDark, minWidth: 80, textAlign: 'center', backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.borderLight, borderRadius: Radius.md, paddingVertical: 8, paddingHorizontal: 12 },
+  stepper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.lg },
+  stepBtn: { 
+    width: 48, 
+    height: 48, 
+    borderRadius: 24, 
+    backgroundColor: Colors.primary, 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  stepInput: { 
+    fontSize: FontSize.xl, 
+    fontWeight: FontWeight.bold, 
+    color: Colors.textDark, 
+    minWidth: 100, 
+    textAlign: 'center', 
+    backgroundColor: Colors.white, 
+    borderWidth: 1, 
+    borderColor: Colors.borderLight, 
+    borderRadius: Radius.md, 
+    paddingVertical: 12, 
+    paddingHorizontal: 16 
+  },
   priceCard: { backgroundColor: Colors.white, borderRadius: Radius.lg, borderWidth: 1, borderColor: Colors.borderGray, padding: Spacing.lg, marginTop: Spacing.md },
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: Colors.borderGray },
   totalRow: { borderBottomWidth: 0, paddingTop: 10 },
@@ -431,5 +652,17 @@ const styles = StyleSheet.create({
     fontSize: FontSize.body,
     color: Colors.textDark,
     minHeight: 80,
+  },
+  disclaimerBox: { 
+    marginTop: Spacing.md, 
+    paddingTop: Spacing.md, 
+    borderTopWidth: 1, 
+    borderTopColor: Colors.borderLight 
+  },
+  disclaimerText: { 
+    fontSize: FontSize.xs, 
+    color: '#DC2626', // Red color
+    lineHeight: 18,
+    fontStyle: 'italic'
   },
 });

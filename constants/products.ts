@@ -55,7 +55,7 @@ export const SUB_PURPOSES: Record<string, string[]> = {
     'Catering Service',
     'Food Court',
     'Canteen',
-    'Custom',
+    'Others',
   ],
   dryer: [
     'Textile Dryer',
@@ -63,7 +63,7 @@ export const SUB_PURPOSES: Record<string, string[]> = {
     'Pharmaceutical Dryer',
     'Chemical Dryer',
     'Agricultural Dryer',
-    'Custom',
+    'Others',
   ],
 };
 
